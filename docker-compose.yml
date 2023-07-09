@@ -1,0 +1,12 @@
+version: "3.1"
+
+services:
+  relation-db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: pgadmin
+      POSTGRES_DB: loyaltydb
+    ports:
+      - "5432:5432"
