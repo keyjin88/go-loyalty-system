@@ -36,7 +36,8 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 		// Проверяем, что токен является объектом типа JWT и содержит правильные поля
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			// Получаем userID из токена
-			userID := claims["user_id"]
+			userIDFloat64 := claims["userID"].(float64)
+			userID := int(userIDFloat64)
 			c.Set("userID", userID)
 			c.Next()
 		} else {

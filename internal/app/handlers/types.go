@@ -12,6 +12,7 @@ type RequestContext interface {
 	AbortWithStatus(code int)
 	Status(code int)
 	Header(key, value string)
+	MustGet(key string) any
 }
 
 //go:generate mockgen -destination=mocks/user_service.go -package=mocks . UserService
@@ -20,19 +21,26 @@ type UserService interface {
 	GetUserByUserName(request storage.AuthRequest) (storage.User, error)
 }
 
+//go:generate mockgen -destination=mocks/order_service.go -package=mocks . OrderService
+type OrderService interface {
+	SaveOrder(orderNumber storage.NewOrderRequest) (storage.Order, error)
+}
+
 type Claims struct {
 	UserID int `json:"userID"`
 	jwt.StandardClaims
 }
 
 type Handler struct {
-	userService UserService
-	secret      string
+	userService  UserService
+	orderService OrderService
+	secret       string
 }
 
-func NewHandler(service UserService, secret string) *Handler {
+func NewHandler(userService UserService, oderService OrderService, secret string) *Handler {
 	return &Handler{
-		userService: service,
-		secret:      secret,
+		userService:  userService,
+		orderService: oderService,
+		secret:       secret,
 	}
 }

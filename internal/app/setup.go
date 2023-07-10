@@ -16,11 +16,13 @@ import (
 )
 
 type API struct {
-	config         *config.Config
-	router         *gin.Engine
-	handlers       *handlers.Handler
-	userService    *services.UserService
-	userRepository *storage.UserRepository
+	config          *config.Config
+	router          *gin.Engine
+	handlers        *handlers.Handler
+	userService     *services.UserService
+	orderService    *services.OrderService
+	userRepository  *storage.UserRepository
+	orderRepository *storage.OrderRepository
 }
 
 func New() *API {
@@ -46,7 +48,7 @@ func (api *API) Start() error {
 }
 
 func (api *API) configureHandlers() {
-	api.handlers = handlers.NewHandler(api.userService, api.config.SecretKey)
+	api.handlers = handlers.NewHandler(api.userService, api.orderService, api.config.SecretKey)
 }
 
 func (api *API) configureRouter() {
@@ -75,8 +77,10 @@ func (api *API) configStorage() {
 		log.Fatal("failed to connect to database")
 	}
 	api.userRepository = storage.NewUserRepository(db)
+	api.orderRepository = storage.NewOrderRepository(db)
 }
 
 func (api *API) configService() {
 	api.userService = services.NewUserService(api.userRepository)
+	api.orderService = services.NewOrderService(api.orderRepository)
 }
