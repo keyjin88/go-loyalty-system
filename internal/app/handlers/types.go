@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 )
 
@@ -10,6 +11,7 @@ type RequestContext interface {
 	JSON(code int, obj any)
 	AbortWithStatus(code int)
 	Status(code int)
+	Header(key, value string)
 }
 
 //go:generate mockgen -destination=mocks/user_service.go -package=mocks . UserService
@@ -18,12 +20,19 @@ type UserService interface {
 	GetUserByUserName(request storage.AuthRequest) (storage.User, error)
 }
 
-type Handler struct {
-	userService UserService
+type Claims struct {
+	UserID int `json:"userID"`
+	jwt.StandardClaims
 }
 
-func NewHandler(service UserService) *Handler {
+type Handler struct {
+	userService UserService
+	secret      string
+}
+
+func NewHandler(service UserService, secret string) *Handler {
 	return &Handler{
 		userService: service,
+		secret:      secret,
 	}
 }

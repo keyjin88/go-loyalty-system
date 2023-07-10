@@ -46,7 +46,7 @@ func (api *API) Start() error {
 }
 
 func (api *API) configureHandlers() {
-	api.handlers = handlers.NewHandler(api.userService)
+	api.handlers = handlers.NewHandler(api.userService, api.config.SecretKey)
 }
 
 func (api *API) configureRouter() {
@@ -62,7 +62,7 @@ func (api *API) configureRouter() {
 		authGroup.POST("api/user/login", func(c *gin.Context) { api.handlers.LoginUser(c) })
 	}
 	protectedGroup := router.Group("/")
-	protectedGroup.Use(middleware.AuthMiddleware)
+	protectedGroup.Use(middleware.AuthMiddleware(api.config.SecretKey))
 	{
 		protectedGroup.POST("api/user/orders", func(c *gin.Context) { api.handlers.ProcessUserOrder(c) })
 	}
