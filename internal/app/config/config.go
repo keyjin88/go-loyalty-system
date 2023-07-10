@@ -22,11 +22,11 @@ func NewConfig() *Config {
 // InitConfig обрабатывает аргументы командной строки
 // и сохраняет их значения в соответствующих переменных
 func (config *Config) InitConfig() {
-	flag.StringVar(&config.ServerAddress, "a", "localhost:8080", "address and port to run server")
+	flag.StringVar(&config.ServerAddress, "a", "localhost:8081", "address and port to run server")
 	flag.BoolVar(&config.GinReleaseMode, "grm", false, "gin release mode")
 	flag.StringVar(&config.LogLevel, "ll", "info", "log level")
 	flag.StringVar(&config.SecretKey, "sk", "abcdefghijklmnopqrstuvwxyz123456", "secret key for cryptographic")
-	flag.StringVar(&config.AccrualSystemAddress, "r", "хз что сюда пока писать", "accrual system address")
+	flag.StringVar(&config.AccrualSystemAddress, "r", "http://localhost:8000", "accrual system address")
 	//flag.StringVar(&config.DataBaseURI, "d", "", "database dsn")
 	// Оставил для локальных тестов
 	flag.StringVar(&config.DataBaseURI, "d", "host=localhost user=pgadmin password=postgres dbname=loyaltydb port=5432 sslmode=disable", "database URI")

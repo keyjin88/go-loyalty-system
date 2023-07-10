@@ -82,5 +82,11 @@ func (api *API) configStorage() {
 
 func (api *API) configService() {
 	api.userService = services.NewUserService(api.userRepository)
-	api.orderService = services.NewOrderService(api.orderRepository)
+	//Канал для обработки заказов через сервер Accrual
+	orderProcessingChannel := make(chan storage.Order)
+	api.orderService = services.NewOrderService(
+		api.orderRepository,
+		orderProcessingChannel,
+		api.config.AccrualSystemAddress,
+	)
 }
