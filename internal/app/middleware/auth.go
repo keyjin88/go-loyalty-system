@@ -21,7 +21,7 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 		token, err := jwt.Parse(authHeader, func(token *jwt.Token) (interface{}, error) {
 			// Проверяем, что алгоритм подписи совпадает с ожидаемым
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Неверный алгоритм подписи: %v", token.Header["alg"])
+				return nil, fmt.Errorf("неверный алгоритм подписи: %v", token.Header["alg"])
 			}
 
 			// Возвращаем ключ для проверки подписи
