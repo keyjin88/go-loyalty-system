@@ -5,14 +5,22 @@ import (
 	"github.com/keyjin88/go-loyalty-system/internal/app/config"
 	"github.com/keyjin88/go-loyalty-system/internal/app/handlers"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
+	"github.com/keyjin88/go-loyalty-system/internal/app/middleware"
 	"github.com/keyjin88/go-loyalty-system/internal/app/middleware/compressor"
+	"github.com/keyjin88/go-loyalty-system/internal/app/services"
+	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"log"
 	"net/http"
 )
 
 type API struct {
-	config   *config.Config
-	router   *gin.Engine
-	handlers *handlers.Handler
+	config         *config.Config
+	router         *gin.Engine
+	handlers       *handlers.Handler
+	userService    *services.UserService
+	userRepository *storage.UserRepository
 }
 
 func New() *API {
@@ -27,8 +35,10 @@ func (api *API) Start() error {
 	}
 
 	api.config.InitConfig()
-	api.configureHandlers()
 	api.configureRouter()
+	api.configStorage()
+	api.configService()
+	api.configureHandlers()
 
 	logger.Log.Infof("Running server. Address: %s |DB URI: %s |Gin release mode: %v |Log level: %s |accrual system address: %s",
 		api.config.ServerAddress, api.config.DataBaseURI, api.config.GinReleaseMode, api.config.LogLevel, api.config.AccrualSystemAddress)
@@ -36,7 +46,7 @@ func (api *API) Start() error {
 }
 
 func (api *API) configureHandlers() {
-	api.handlers = handlers.NewHandler()
+	api.handlers = handlers.NewHandler(api.userService)
 }
 
 func (api *API) configureRouter() {
@@ -44,11 +54,28 @@ func (api *API) configureRouter() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	router := gin.New()
-	// router.Use(middleware.AuthMiddleware)
 	router.Use(compressor.CompressionMiddleware())
 	router.Use(gin.Logger())
+	authGroup := router.Group("/")
 	{
-		router.POST("api/user/orders", func(c *gin.Context) { api.handlers.ProcessUserOrder(c) })
+		authGroup.POST("api/user/register", func(c *gin.Context) { api.handlers.RegisterUser(c) })
+	}
+	protectedGroup := router.Group("/")
+	protectedGroup.Use(middleware.AuthMiddleware)
+	{
+		protectedGroup.POST("api/user/orders", func(c *gin.Context) { api.handlers.ProcessUserOrder(c) })
 	}
 	api.router = router
+}
+
+func (api *API) configStorage() {
+	db, err := gorm.Open(postgres.Open(api.config.DataBaseURI), &gorm.Config{})
+	if err != nil {
+		log.Fatal("failed to connect to database")
+	}
+	api.userRepository = storage.NewUserRepository(db)
+}
+
+func (api *API) configService() {
+	api.userService = services.NewUserService(api.userRepository)
 }

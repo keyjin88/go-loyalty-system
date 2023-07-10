@@ -29,7 +29,7 @@ func (config *Config) InitConfig() {
 	flag.StringVar(&config.AccrualSystemAddress, "r", "хз что сюда пока писать", "accrual system address")
 	//flag.StringVar(&config.DataBaseURI, "d", "", "database dsn")
 	// Оставил для локальных тестов
-	flag.StringVar(&config.DataBaseURI, "d", "postgres://pgadmin:postgres@localhost:5432/loyaltydb", "database URI")
+	flag.StringVar(&config.DataBaseURI, "d", "host=localhost user=pgadmin password=postgres dbname=loyaltydb port=5432 sslmode=disable", "database URI")
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 	// Пробуем распарсить переменные окружения, если их не будет, то оставляем значения по умолчанию из флагов

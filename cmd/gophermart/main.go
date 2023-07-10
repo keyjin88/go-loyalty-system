@@ -7,6 +7,6 @@ import (
 
 func main() {
 	server := app.New()
-	//api server start
+	// api server start
 	logger.Log.Panic(server.Start())
 }
