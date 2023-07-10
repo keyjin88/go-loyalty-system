@@ -27,6 +27,8 @@ type User struct {
 
 type Order struct {
 	Entity
-	Number string `json:"number" db:"number"`
-	UserID int    `json:"user_id" db:"user_id"`
+	Number  string  `json:"number" db:"number"`
+	UserID  int     `json:"user_id" db:"user_id"`
+	Status  string  `json:"status" db:"status"`
+	Accrual float64 `json:"accrual" db:"accrual"`
 }

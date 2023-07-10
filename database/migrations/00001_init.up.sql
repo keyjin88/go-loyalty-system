@@ -20,6 +20,8 @@ create table orders
     number     varchar                 not null
         unique,
     user_id    integer                 not null,
+    status     varchar   default 'NEW' not null,
+    accrual    float,
     is_deleted boolean   default false not null
 );
 COMMIT;
