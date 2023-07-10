@@ -104,17 +104,17 @@ func getOrderDetails(order *storage.Order, host string) error {
 			order.Status = details.Status
 			order.Accrual = details.Accrual
 		case http.StatusNoContent:
-			return errors.New(fmt.Sprintf("Заказ %s не зарегистрирован в системе расчета", order.Number))
+			return fmt.Errorf("заказ %s не зарегистрирован в системе расчета", order.Number)
 		case http.StatusTooManyRequests:
 			if i == maxRetries-1 {
-				return errors.New(fmt.Sprintf("Превышено количество запросов по заказу: %s", order.Number))
+				return fmt.Errorf("превышено количество запросов по заказу: %s", order.Number)
 			}
 			resp.Body.Close()
 			time.Sleep(retryInterval)
 		case http.StatusInternalServerError:
-			return errors.New(fmt.Sprintf("Внутренняя ошибка сервера"))
+			return fmt.Errorf("внутренняя ошибка сервера")
 		default:
-			return errors.New(fmt.Sprintf("Непредвиденный статус ответа: %s", resp.Status))
+			return fmt.Errorf("непредвиденный статус ответа: %s", resp.Status)
 		}
 	}
 	return nil
