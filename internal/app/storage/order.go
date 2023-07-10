@@ -19,3 +19,12 @@ func (r *OrderRepository) Save(order *Order) error {
 	}
 	return nil
 }
+
+func (r *OrderRepository) GetOrderByNumber(number string) (Order, error) {
+	var saverOrder Order
+	tx := r.db.First(&saverOrder, "number = ?", number)
+	if tx.Error != nil {
+		return Order{}, tx.Error
+	}
+	return saverOrder, nil
+}

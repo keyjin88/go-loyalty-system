@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"strconv"
 )
@@ -16,7 +18,7 @@ func NewOrderService(orderRepository *storage.OrderRepository) *OrderService {
 
 func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order, error) {
 	if checkOrderNumber(request.Number) {
-		return storage.Order{}, errors.New("wrong order number")
+		return storage.Order{}, errors.New("order has wrong format")
 	}
 	var order = storage.Order{
 		Number: request.Number,
@@ -24,7 +26,19 @@ func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order
 	}
 	err := s.orderRepository.Save(&order)
 	if err != nil {
-		return storage.Order{}, err
+		pgErr, ok := err.(*pgconn.PgError)
+		if ok && pgErr.Code == pgerrcode.UniqueViolation {
+			order, err = s.orderRepository.GetOrderByNumber(request.Number)
+			if err != nil {
+				return storage.Order{}, err
+			}
+			if order.UserID == request.UserID {
+				return storage.Order{}, errors.New("order already uploaded by this user")
+			}
+			return storage.Order{}, errors.New("order already uploaded by another user")
+		} else {
+			return storage.Order{}, err
+		}
 	}
 	return order, nil
 }

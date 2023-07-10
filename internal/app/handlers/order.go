@@ -16,10 +16,19 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 		return
 	}
 	orderNumber := string(requestBytes)
-	userId := c.MustGet("userID").(int)
-	order, err := h.orderService.SaveOrder(storage.NewOrderRequest{Number: orderNumber, UserID: userId})
+	userID := c.MustGet("userID").(int)
+	order, err := h.orderService.SaveOrder(storage.NewOrderRequest{Number: orderNumber, UserID: userID})
 	if err != nil {
-		return
+		switch {
+		case err.Error() == "order already uploaded by this user":
+			c.AbortWithStatus(http.StatusOK)
+		case err.Error() == "order already uploaded by another user":
+			c.AbortWithStatus(http.StatusConflict)
+		case err.Error() == "order has wrong format":
+			c.AbortWithStatus(http.StatusUnprocessableEntity)
+		default:
+			c.AbortWithStatus(http.StatusInternalServerError)
+		}
 	}
 	c.JSON(http.StatusAccepted, fmt.Sprintf("Accepted order: %v", order))
 }
