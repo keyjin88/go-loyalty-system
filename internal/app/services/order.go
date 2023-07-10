@@ -107,7 +107,7 @@ func getOrderDetails(order *storage.Order, host string) error {
 			return errors.New(fmt.Sprintf("Заказ %s не зарегистрирован в системе расчета", order.Number))
 		case http.StatusTooManyRequests:
 			if i == maxRetries-1 {
-				return errors.New(fmt.Sprintf("Превышено количество запросов по заказу: %ы", order.Number))
+				return errors.New(fmt.Sprintf("Превышено количество запросов по заказу: %s", order.Number))
 			}
 			resp.Body.Close()
 			time.Sleep(retryInterval)
