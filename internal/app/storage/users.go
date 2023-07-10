@@ -2,7 +2,6 @@ package storage
 
 import (
 	"gorm.io/gorm"
-	"log"
 )
 
 type UserRepository struct {
@@ -18,7 +17,16 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (r *UserRepository) Save(user *User) error {
 	err := r.db.Create(&user).Error
 	if err != nil {
-		log.Fatal("failed to save user to database")
+		return err
 	}
 	return nil
+}
+
+func (r *UserRepository) FindUserByUserName(userName string) (User, error) {
+	var savedUser User
+	tx := r.db.First(&savedUser, "user_name = ?", userName)
+	if tx.Error != nil {
+		return User{}, tx.Error
+	}
+	return savedUser, nil
 }

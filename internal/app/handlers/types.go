@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/keyjin88/go-loyalty-system/internal/app/services"
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 )
 
@@ -9,19 +8,22 @@ import (
 type RequestContext interface {
 	GetRawData() ([]byte, error)
 	JSON(code int, obj any)
+	AbortWithStatus(code int)
+	Status(code int)
 }
 
 //go:generate mockgen -destination=mocks/user_service.go -package=mocks . UserService
 type UserService interface {
-	SaveUser(request storage.RegisterUserRequest) (storage.User, error)
+	SaveUser(request storage.AuthRequest) (storage.User, error)
+	GetUserByUserName(request storage.AuthRequest) (storage.User, error)
 }
 
 type Handler struct {
-	userService *services.UserService
+	userService UserService
 }
 
-func NewHandler(userService *services.UserService) *Handler {
+func NewHandler(service UserService) *Handler {
 	return &Handler{
-		userService: userService,
+		userService: service,
 	}
 }

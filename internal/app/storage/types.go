@@ -2,7 +2,7 @@ package storage
 
 import "time"
 
-type RegisterUserRequest struct {
+type AuthRequest struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }

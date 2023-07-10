@@ -59,6 +59,7 @@ func (api *API) configureRouter() {
 	authGroup := router.Group("/")
 	{
 		authGroup.POST("api/user/register", func(c *gin.Context) { api.handlers.RegisterUser(c) })
+		authGroup.POST("api/user/login", func(c *gin.Context) { api.handlers.LoginUser(c) })
 	}
 	protectedGroup := router.Group("/")
 	protectedGroup.Use(middleware.AuthMiddleware)
