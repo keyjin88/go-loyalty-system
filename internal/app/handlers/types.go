@@ -9,8 +9,6 @@ import (
 type RequestContext interface {
 	GetRawData() ([]byte, error)
 	JSON(code int, obj any)
-	AbortWithStatus(code int)
-	Status(code int)
 	Header(key, value string)
 	MustGet(key string) any
 }
@@ -35,7 +33,7 @@ type WithdrawService interface {
 }
 
 type Claims struct {
-	UserID uint `json:"userID"`
+	UserID uint `json:"mustGetReturn"`
 	jwt.StandardClaims
 }
 

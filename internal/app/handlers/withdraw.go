@@ -22,7 +22,7 @@ func (h *Handler) SaveWithdraw(c RequestContext) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Error while marshalling json"})
 		return
 	}
-	req.UserID = c.MustGet("userID").(uint)
+	req.UserID = c.MustGet("mustGetReturn").(uint)
 	err = h.withdrawService.SaveWithdraw(req)
 	if err != nil && err.Error() == "not enough funds" {
 		logger.Log.Infof("not enough funds: %v", err)
@@ -37,7 +37,7 @@ func (h *Handler) SaveWithdraw(c RequestContext) {
 }
 
 func (h *Handler) GetAllWithdrawals(c RequestContext) {
-	userID := c.MustGet("userID").(uint)
+	userID := c.MustGet("mustGetReturn").(uint)
 	withdrawals, err := h.withdrawService.GetAllWithdrawals(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
