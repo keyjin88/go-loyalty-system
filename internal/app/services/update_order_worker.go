@@ -7,7 +7,6 @@ import (
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"gorm.io/gorm"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -19,9 +18,7 @@ func WorkerProcessingOrders(ch <-chan storage.Order, host string, db *gorm.DB) {
 			getOrderDetails(&order, host)
 			err := db.Model(&order).Updates(order).Error
 			if err != nil {
-				log.Printf("Failed to update order %v: %v", order.ID, err)
-			} else {
-				log.Printf("Order %v updated", order.ID)
+				logger.Log.Infof("Failed to update order %v: %v", order.ID, err)
 			}
 		}(order)
 	}

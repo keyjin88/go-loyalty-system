@@ -32,7 +32,7 @@ func NewOrderService(
 }
 
 func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order, error) {
-	if checkOrderNumber(request.Number) {
+	if !checkOrderNumber(request.Number) {
 		return storage.Order{}, errors.New("order has wrong format")
 	}
 	var order = storage.Order{
