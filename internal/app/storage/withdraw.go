@@ -26,3 +26,12 @@ func (r *WithdrawRepository) Save(withdraw *Withdraw) error {
 	}
 	return nil
 }
+
+func (r *WithdrawRepository) GetWithdrawals(userID uint) ([]Withdraw, error) {
+	var withdraws []Withdraw
+	result := r.db.Where("user_id = ?", userID).Find(&withdraws)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return withdraws, nil
+}

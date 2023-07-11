@@ -35,3 +35,15 @@ func (h *Handler) SaveWithdraw(c RequestContext) {
 	}
 	c.Status(http.StatusOK)
 }
+
+func (h *Handler) GetAllWithdrawals(c RequestContext) {
+	userID := c.MustGet("userID").(uint)
+	withdrawals, err := h.withdrawService.GetAllWithdrawals(userID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}
+	if len(withdrawals) == 0 {
+		c.AbortWithStatus(http.StatusNoContent)
+	}
+	c.JSON(http.StatusOK, withdrawals)
+}

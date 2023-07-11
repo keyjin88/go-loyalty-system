@@ -55,9 +55,16 @@ type WithdrawRequest struct {
 	Sum    float64 `json:"sum"`
 }
 
+type WithdrawResponse struct {
+	Order         string    `json:"order"`
+	Sum           float64   `json:"sum"`
+	ProcessedDate time.Time `json:"-"`
+	ProcessedAt   string    `json:"processed_at"`
+}
+
 type Withdraw struct {
 	Entity
 	OrderNumber string  `json:"order_number" db:"order_number" gorm:"not null"`
 	Sum         float64 `json:"sum" db:"sum" gorm:"not null"`
-	UserId      uint    `json:"user_id" db:"user_id" gorm:"not null"`
+	UserID      uint    `json:"user_id" db:"user_id" gorm:"not null"`
 }

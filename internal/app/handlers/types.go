@@ -31,6 +31,7 @@ type OrderService interface {
 //go:generate mockgen -destination=mocks/withdraw_service.go -package=mocks . WithdrawService
 type WithdrawService interface {
 	SaveWithdraw(request storage.WithdrawRequest) error
+	GetAllWithdrawals(userID uint) ([]storage.WithdrawResponse, error)
 }
 
 type Claims struct {

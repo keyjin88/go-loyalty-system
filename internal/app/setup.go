@@ -91,6 +91,7 @@ func (api *API) configureRouter() {
 		protectedGroup.POST("api/user/orders", func(c *gin.Context) { api.handlers.ProcessUserOrder(c) })
 		protectedGroup.GET("api/user/orders", func(c *gin.Context) { api.handlers.GetAllOrders(c) })
 		protectedGroup.GET("api/user/balance", func(c *gin.Context) { api.handlers.GetBalance(c) })
+		protectedGroup.GET("api/user/withdrawals", func(c *gin.Context) { api.handlers.GetAllWithdrawals(c) })
 		protectedGroup.POST("api/user/balance/withdraw", func(c *gin.Context) { api.handlers.SaveWithdraw(c) })
 	}
 	api.router = router
