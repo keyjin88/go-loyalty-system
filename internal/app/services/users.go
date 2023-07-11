@@ -46,6 +46,14 @@ func (s *UserService) GetUserByUserName(request storage.AuthRequest) (storage.Us
 	return user, nil
 }
 
+func (s *UserService) GetUserBalance(userID uint) (storage.BalanceResponse, error) {
+	user, err := s.userRepository.FindUserById(userID)
+	if err != nil {
+		return storage.BalanceResponse{}, err
+	}
+	return storage.BalanceResponse{Current: user.Balance, Withdrawn: user.Withdrawn}, nil
+}
+
 // Хэширование пароля
 func hashPassword(password string) string {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

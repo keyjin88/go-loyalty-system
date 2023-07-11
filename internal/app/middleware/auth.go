@@ -36,7 +36,7 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			// Получаем userID из токена
 			userIDFloat64 := claims["userID"].(float64)
-			userID := int(userIDFloat64)
+			userID := uint(userIDFloat64)
 			c.Set("userID", userID)
 			c.Next()
 		} else {

@@ -8,6 +8,8 @@ create table users
     user_name  varchar                 not null
         unique,
     password   varchar                 not null,
+    balance    float     default 0.0   not null,
+    withdrawn  float4    default 0.0   not null,
     is_deleted boolean   default false not null
 );
 

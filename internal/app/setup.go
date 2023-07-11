@@ -88,6 +88,7 @@ func (api *API) configureRouter() {
 	{
 		protectedGroup.POST("api/user/orders", func(c *gin.Context) { api.handlers.ProcessUserOrder(c) })
 		protectedGroup.GET("api/user/orders", func(c *gin.Context) { api.handlers.GetAllOrders(c) })
+		protectedGroup.GET("api/user/balance", func(c *gin.Context) { api.handlers.GetBalance(c) })
 	}
 	api.router = router
 }

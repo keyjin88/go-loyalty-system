@@ -16,11 +16,36 @@ func WorkerProcessingOrders(ch <-chan storage.Order, host string, db *gorm.DB) {
 		logger.Log.Infof("processing %v", order)
 		go func(order storage.Order) {
 			getOrderDetails(&order, host)
-			err := db.Model(&order).Updates(order).Error
-			if err != nil {
-				logger.Log.Infof("Failed to update order %v: %v", order.ID, err)
+			tx := db.Begin() // Начало транзакции
+			updateOrderDetails(&order, tx)
+			updateUserBalance(order.UserID, order.Accrual, tx)
+			if err := tx.Commit().Error; err != nil {
+				tx.Rollback() // Откат транзакции при ошибке
+				logger.Log.Infof("Failed to process order %v: %v", order.ID, err)
 			}
 		}(order)
+	}
+}
+
+func updateOrderDetails(order *storage.Order, tx *gorm.DB) {
+	err := tx.Model(order).Updates(order).Error
+	if err != nil {
+		logger.Log.Infof("Failed to update order %v: %v", order.ID, err)
+	}
+}
+
+func updateUserBalance(userID uint, accrual float64, tx *gorm.DB) {
+	var savedUser storage.User
+	err := tx.First(&savedUser, "id = ?", userID)
+	if err != nil {
+		logger.Log.Infof("Failed to find user %v: %v", userID, err)
+		tx.Rollback()
+	}
+	savedUser.Balance += accrual
+	tx.Updates(&savedUser)
+	if tx.Error != nil {
+		logger.Log.Infof("Failed to update user %v: %v", userID, err)
+		tx.Rollback()
 	}
 }
 

@@ -16,7 +16,7 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 		return
 	}
 	orderNumber := string(requestBytes)
-	userID := c.MustGet("userID").(int)
+	userID := c.MustGet("userID").(uint)
 	order, err := h.orderService.SaveOrder(storage.NewOrderRequest{Number: orderNumber, UserID: userID})
 	if err != nil {
 		switch {

@@ -19,6 +19,7 @@ type RequestContext interface {
 type UserService interface {
 	SaveUser(request storage.AuthRequest) (storage.User, error)
 	GetUserByUserName(request storage.AuthRequest) (storage.User, error)
+	GetUserBalance(userID uint) (storage.BalanceResponse, error)
 }
 
 //go:generate mockgen -destination=mocks/order_service.go -package=mocks . OrderService

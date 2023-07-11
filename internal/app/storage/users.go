@@ -28,6 +28,15 @@ func (r *UserRepository) Save(user *User) error {
 	return nil
 }
 
+func (r *UserRepository) FindUserById(userID uint) (User, error) {
+	var savedUser User
+	tx := r.db.First(&savedUser, "id = ?", userID)
+	if tx.Error != nil {
+		return User{}, tx.Error
+	}
+	return savedUser, nil
+}
+
 func (r *UserRepository) FindUserByUserName(userName string) (User, error) {
 	var savedUser User
 	tx := r.db.First(&savedUser, "user_name = ?", userName)

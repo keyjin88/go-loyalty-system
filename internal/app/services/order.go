@@ -51,9 +51,8 @@ func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order
 				return storage.Order{}, errors.New("order already uploaded by this user")
 			}
 			return storage.Order{}, errors.New("order already uploaded by another user")
-		} else {
-			return storage.Order{}, err
 		}
+		return storage.Order{}, err
 	}
 	s.orderProcessingChannel <- order
 	return order, nil
