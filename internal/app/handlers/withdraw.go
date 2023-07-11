@@ -33,7 +33,7 @@ func (h *Handler) SaveWithdraw(c RequestContext) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while saving withdraw"})
 		return
 	}
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, "Withdrawal successfully saved")
 }
 
 func (h *Handler) GetAllWithdrawals(c RequestContext) {

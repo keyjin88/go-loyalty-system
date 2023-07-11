@@ -38,7 +38,7 @@ func (h *Handler) RegisterUser(c RequestContext) {
 		log.Fatal("failed to create JWT token")
 	}
 	c.Header("Authorization", token)
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, "New user successfully created")
 }
 
 func (h *Handler) LoginUser(c RequestContext) {
@@ -67,7 +67,7 @@ func (h *Handler) LoginUser(c RequestContext) {
 		log.Fatal("failed to create JWT token")
 	}
 	c.Header("Authorization", token)
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, "Login successful")
 }
 
 func createToken(userID uint, secret string) (string, error) {
