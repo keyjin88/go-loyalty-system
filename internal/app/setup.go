@@ -38,16 +38,36 @@ func (api *API) Start() error {
 
 	api.config.InitConfig()
 	api.configureRouter()
-	api.configStorage()
-	api.configService()
-	api.configureHandlers()
+	db := api.ConfigDBConnection()
+	api.configStorage(db)
+	// Канал для обработки заказов через сервер Accrual
+	orderProcessingChannel := make(chan storage.Order)
+	api.configService(orderProcessingChannel)
+	api.configHandlers()
+	api.configWorkers(db, orderProcessingChannel)
 
 	logger.Log.Infof("Running server. Address: %s |DB URI: %s |Gin release mode: %v |Log level: %s |accrual system address: %s",
 		api.config.ServerAddress, api.config.DataBaseURI, api.config.GinReleaseMode, api.config.LogLevel, api.config.AccrualSystemAddress)
 	return http.ListenAndServe(api.config.ServerAddress, api.router)
 }
 
-func (api *API) configureHandlers() {
+func (api *API) ConfigDBConnection() *gorm.DB {
+	// Создание пула соединений
+	db, err := gorm.Open(postgres.Open(api.config.DataBaseURI), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Установка максимального количества подключений в пуле
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	return db
+}
+
+func (api *API) configHandlers() {
 	api.handlers = handlers.NewHandler(api.userService, api.orderService, api.config.SecretKey)
 }
 
@@ -72,24 +92,19 @@ func (api *API) configureRouter() {
 	api.router = router
 }
 
-func (api *API) configStorage() {
-	db, err := gorm.Open(postgres.Open(api.config.DataBaseURI), &gorm.Config{})
-	if err != nil {
-		log.Fatal("failed to connect to database")
-	}
+func (api *API) configStorage(db *gorm.DB) {
 	api.userRepository = storage.NewUserRepository(db)
-	//Канал для обработки обглвдения информации о заказох
-	orderUpdatingChannel := make(chan storage.Order)
-	api.orderRepository = storage.NewOrderRepository(db, orderUpdatingChannel)
+	api.orderRepository = storage.NewOrderRepository(db)
 }
 
-func (api *API) configService() {
+func (api *API) configService(channel chan storage.Order) {
 	api.userService = services.NewUserService(api.userRepository)
-	//Канал для обработки заказов через сервер Accrual
-	orderProcessingChannel := make(chan storage.Order)
 	api.orderService = services.NewOrderService(
 		api.orderRepository,
-		orderProcessingChannel,
-		api.config.AccrualSystemAddress,
+		channel,
 	)
+}
+
+func (api *API) configWorkers(db *gorm.DB, channel chan storage.Order) {
+	go services.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db)
 }
