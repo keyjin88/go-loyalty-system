@@ -26,7 +26,7 @@ func (h *Handler) SaveWithdraw(c RequestContext) {
 	err = h.withdrawService.SaveWithdraw(req)
 	if err != nil && err.Error() == "not enough funds" {
 		logger.Log.Infof("not enough funds: %v", err)
-		c.AbortWithStatus(http.StatusPaymentRequired)
+		c.JSON(http.StatusPaymentRequired, gin.H{"error": "not enough funds"})
 		return
 	} else if err != nil {
 		logger.Log.Infof("error while saving withdraw: %v", err)
@@ -40,10 +40,10 @@ func (h *Handler) GetAllWithdrawals(c RequestContext) {
 	userID := c.MustGet("userID").(uint)
 	withdrawals, err := h.withdrawService.GetAllWithdrawals(userID)
 	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 	}
 	if len(withdrawals) == 0 {
-		c.AbortWithStatus(http.StatusNoContent)
+		c.JSON(http.StatusNoContent, gin.H{"error": "withdrawal not found"})
 	}
 	c.JSON(http.StatusOK, withdrawals)
 }

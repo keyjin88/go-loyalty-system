@@ -28,9 +28,9 @@ func (h *Handler) RegisterUser(c RequestContext) {
 	userFromDB, err := h.userService.SaveUser(req)
 	if err != nil {
 		if err.Error() == "user already exists" {
-			c.AbortWithStatus(http.StatusConflict)
+			c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 		} else {
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		}
 	}
 	token, err := createToken(userFromDB.ID, h.secret)
@@ -58,13 +58,13 @@ func (h *Handler) LoginUser(c RequestContext) {
 	userFromDB, err := h.userService.GetUserByUserName(req)
 	if err != nil {
 		if err.Error() == "crypto/bcrypt: hashedPassword is not the hash of the given password" {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "wrong password"})
 		}
 		return
 	}
 	token, err := createToken(userFromDB.ID, h.secret)
 	if err != nil {
-		log.Fatal("failed to create JWT token")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create JWT token"})
 	}
 	c.Header("Authorization", token)
 	c.JSON(http.StatusOK, "Login successful")

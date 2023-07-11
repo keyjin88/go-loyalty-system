@@ -21,13 +21,13 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 	if err != nil {
 		switch {
 		case err.Error() == "order already uploaded by this user":
-			c.AbortWithStatus(http.StatusOK)
+			c.JSON(http.StatusOK, gin.H{"error": "order already uploaded by this user"})
 		case err.Error() == "order already uploaded by another user":
-			c.AbortWithStatus(http.StatusConflict)
+			c.JSON(http.StatusConflict, gin.H{"error": "order already uploaded by another user"})
 		case err.Error() == "order has wrong format":
-			c.AbortWithStatus(http.StatusUnprocessableEntity)
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "wrong order number format"})
 		default:
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		}
 	}
 	c.JSON(http.StatusAccepted, fmt.Sprintf("Accepted order: %v", order))
@@ -37,10 +37,10 @@ func (h *Handler) GetAllOrders(c RequestContext) {
 	userID := c.MustGet("userID").(uint)
 	orders, err := h.orderService.GetAllOrders(userID)
 	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 	}
 	if len(orders) == 0 {
-		c.AbortWithStatus(http.StatusNoContent)
+		c.JSON(http.StatusNoContent, gin.H{"error": "orders not found"})
 	}
 	c.JSON(http.StatusOK, orders)
 }
