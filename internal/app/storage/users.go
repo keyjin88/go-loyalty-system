@@ -2,6 +2,7 @@ package storage
 
 import (
 	"gorm.io/gorm"
+	"log"
 )
 
 type UserRepository struct {
@@ -9,6 +10,11 @@ type UserRepository struct {
 }
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
+	// Миграция таблицы User
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		log.Fatal("failed to migrate users table")
+	}
 	return &UserRepository{
 		db: db,
 	}

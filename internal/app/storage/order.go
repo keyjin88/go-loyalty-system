@@ -1,12 +1,19 @@
 package storage
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"log"
+)
 
 type OrderRepository struct {
 	db *gorm.DB
 }
 
 func NewOrderRepository(db *gorm.DB) *OrderRepository {
+	err := db.AutoMigrate(&Order{})
+	if err != nil {
+		log.Fatal("failed to migrate orders table")
+	}
 	return &OrderRepository{
 		db: db,
 	}

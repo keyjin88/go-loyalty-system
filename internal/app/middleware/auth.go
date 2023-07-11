@@ -23,7 +23,6 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("неверный алгоритм подписи: %v", token.Header["alg"])
 			}
-
 			// Возвращаем ключ для проверки подписи
 			return []byte(secret), nil
 		})
