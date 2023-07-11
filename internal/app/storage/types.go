@@ -58,4 +58,5 @@ type Withdraw struct {
 	Entity
 	OrderNumber string  `json:"order_number" db:"order_number" gorm:"not null"`
 	Sum         float64 `json:"sum" db:"sum" gorm:"not null"`
+	UserId      string  `json:"user_id" db:"user_id" gorm:"not null"`
 }

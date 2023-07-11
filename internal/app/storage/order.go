@@ -36,7 +36,7 @@ func (r *OrderRepository) GetOrderByNumber(number string) (Order, error) {
 	return saverOrder, nil
 }
 
-func (r *OrderRepository) GetAllOrders(userID int) ([]Order, error) {
+func (r *OrderRepository) GetAllOrders(userID uint) ([]Order, error) {
 	var orders []Order
 	result := r.db.Where("user_id = ?", userID).Find(&orders)
 	if result.Error != nil {

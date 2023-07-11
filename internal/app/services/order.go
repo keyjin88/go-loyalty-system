@@ -58,7 +58,7 @@ func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order
 	return order, nil
 }
 
-func (s *OrderService) GetAllOrders(userID int) ([]storage.AllOrderResponse, error) {
+func (s *OrderService) GetAllOrders(userID uint) ([]storage.AllOrderResponse, error) {
 	orders, err := s.orderRepository.GetAllOrders(userID)
 	if err != nil {
 		return nil, err

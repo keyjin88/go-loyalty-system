@@ -25,7 +25,7 @@ type UserService interface {
 //go:generate mockgen -destination=mocks/order_service.go -package=mocks . OrderService
 type OrderService interface {
 	SaveOrder(orderNumber storage.NewOrderRequest) (storage.Order, error)
-	GetAllOrders(userID int) ([]storage.AllOrderResponse, error)
+	GetAllOrders(userID uint) ([]storage.AllOrderResponse, error)
 }
 
 type Claims struct {

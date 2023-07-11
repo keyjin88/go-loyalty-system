@@ -34,7 +34,7 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 }
 
 func (h *Handler) GetAllOrders(c RequestContext) {
-	userID := c.MustGet("userID").(int)
+	userID := c.MustGet("userID").(uint)
 	orders, err := h.orderService.GetAllOrders(userID)
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
