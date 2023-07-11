@@ -28,21 +28,28 @@ type OrderService interface {
 	GetAllOrders(userID uint) ([]storage.AllOrderResponse, error)
 }
 
+//go:generate mockgen -destination=mocks/withdraw_service.go -package=mocks . WithdrawService
+type WithdrawService interface {
+	SaveWithdraw(request storage.WithdrawRequest) error
+}
+
 type Claims struct {
 	UserID uint `json:"userID"`
 	jwt.StandardClaims
 }
 
 type Handler struct {
-	userService  UserService
-	orderService OrderService
-	secret       string
+	userService     UserService
+	orderService    OrderService
+	withdrawService WithdrawService
+	secret          string
 }
 
-func NewHandler(userService UserService, oderService OrderService, secret string) *Handler {
+func NewHandler(userService UserService, oderService OrderService, withdrawService WithdrawService, secret string) *Handler {
 	return &Handler{
-		userService:  userService,
-		orderService: oderService,
-		secret:       secret,
+		userService:     userService,
+		orderService:    oderService,
+		withdrawService: withdrawService,
+		secret:          secret,
 	}
 }

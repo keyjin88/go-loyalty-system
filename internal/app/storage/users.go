@@ -10,7 +10,6 @@ type UserRepository struct {
 }
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
-	// Миграция таблицы User
 	err := db.AutoMigrate(&User{})
 	if err != nil {
 		log.Fatal("failed to migrate users table")
@@ -28,7 +27,15 @@ func (r *UserRepository) Save(user *User) error {
 	return nil
 }
 
-func (r *UserRepository) FindUserById(userID uint) (User, error) {
+func (r *UserRepository) Update(user *User) error {
+	err := r.db.Updates(&user).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepository) FindUserByID(userID uint) (User, error) {
 	var savedUser User
 	tx := r.db.First(&savedUser, "id = ?", userID)
 	if tx.Error != nil {

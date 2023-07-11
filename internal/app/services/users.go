@@ -47,7 +47,7 @@ func (s *UserService) GetUserByUserName(request storage.AuthRequest) (storage.Us
 }
 
 func (s *UserService) GetUserBalance(userID uint) (storage.BalanceResponse, error) {
-	user, err := s.userRepository.FindUserById(userID)
+	user, err := s.userRepository.FindUserByID(userID)
 	if err != nil {
 		return storage.BalanceResponse{}, err
 	}

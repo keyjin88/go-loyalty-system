@@ -16,13 +16,15 @@ import (
 )
 
 type API struct {
-	config          *config.Config
-	router          *gin.Engine
-	handlers        *handlers.Handler
-	userService     *services.UserService
-	orderService    *services.OrderService
-	userRepository  *storage.UserRepository
-	orderRepository *storage.OrderRepository
+	config             *config.Config
+	router             *gin.Engine
+	handlers           *handlers.Handler
+	userService        *services.UserService
+	orderService       *services.OrderService
+	withdrawService    *services.WithdrawService
+	userRepository     *storage.UserRepository
+	orderRepository    *storage.OrderRepository
+	withdrawRepository *storage.WithdrawRepository
 }
 
 func New() *API {
@@ -68,7 +70,7 @@ func (api *API) ConfigDBConnection() *gorm.DB {
 }
 
 func (api *API) configHandlers() {
-	api.handlers = handlers.NewHandler(api.userService, api.orderService, api.config.SecretKey)
+	api.handlers = handlers.NewHandler(api.userService, api.orderService, api.withdrawService, api.config.SecretKey)
 }
 
 func (api *API) configureRouter() {
@@ -89,6 +91,7 @@ func (api *API) configureRouter() {
 		protectedGroup.POST("api/user/orders", func(c *gin.Context) { api.handlers.ProcessUserOrder(c) })
 		protectedGroup.GET("api/user/orders", func(c *gin.Context) { api.handlers.GetAllOrders(c) })
 		protectedGroup.GET("api/user/balance", func(c *gin.Context) { api.handlers.GetBalance(c) })
+		protectedGroup.POST("api/user/balance/withdraw", func(c *gin.Context) { api.handlers.SaveWithdraw(c) })
 	}
 	api.router = router
 }
@@ -96,10 +99,12 @@ func (api *API) configureRouter() {
 func (api *API) configStorage(db *gorm.DB) {
 	api.userRepository = storage.NewUserRepository(db)
 	api.orderRepository = storage.NewOrderRepository(db)
+	api.withdrawRepository = storage.NewWithdrawRepository(db)
 }
 
 func (api *API) configService(channel chan storage.Order) {
 	api.userService = services.NewUserService(api.userRepository)
+	api.withdrawService = services.NewWithdrawService(api.withdrawRepository, api.userRepository)
 	api.orderService = services.NewOrderService(
 		api.orderRepository,
 		channel,
