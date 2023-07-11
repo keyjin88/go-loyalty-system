@@ -70,7 +70,7 @@ func (h *Handler) LoginUser(c RequestContext) {
 	c.Status(http.StatusOK)
 }
 
-func createToken(userID int, secret string) (string, error) {
+func createToken(userID uint, secret string) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		StandardClaims: jwt.StandardClaims{

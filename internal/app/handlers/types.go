@@ -24,10 +24,11 @@ type UserService interface {
 //go:generate mockgen -destination=mocks/order_service.go -package=mocks . OrderService
 type OrderService interface {
 	SaveOrder(orderNumber storage.NewOrderRequest) (storage.Order, error)
+	GetAllOrders(userID int) ([]storage.AllOrderResponse, error)
 }
 
 type Claims struct {
-	UserID int `json:"userID"`
+	UserID uint `json:"userID"`
 	jwt.StandardClaims
 }
 

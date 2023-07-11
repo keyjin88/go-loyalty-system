@@ -32,3 +32,15 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 	}
 	c.JSON(http.StatusAccepted, fmt.Sprintf("Accepted order: %v", order))
 }
+
+func (h *Handler) GetAllOrders(c RequestContext) {
+	userID := c.MustGet("userID").(int)
+	orders, err := h.orderService.GetAllOrders(userID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}
+	if len(orders) == 0 {
+		c.AbortWithStatus(http.StatusNoContent)
+	}
+	c.JSON(http.StatusOK, orders)
+}

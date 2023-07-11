@@ -67,6 +67,7 @@ func (api *API) configureRouter() {
 	protectedGroup.Use(middleware.AuthMiddleware(api.config.SecretKey))
 	{
 		protectedGroup.POST("api/user/orders", func(c *gin.Context) { api.handlers.ProcessUserOrder(c) })
+		protectedGroup.GET("api/user/orders", func(c *gin.Context) { api.handlers.GetAllOrders(c) })
 	}
 	api.router = router
 }
@@ -77,7 +78,9 @@ func (api *API) configStorage() {
 		log.Fatal("failed to connect to database")
 	}
 	api.userRepository = storage.NewUserRepository(db)
-	api.orderRepository = storage.NewOrderRepository(db)
+	//Канал для обработки обглвдения информации о заказох
+	orderUpdatingChannel := make(chan storage.Order)
+	api.orderRepository = storage.NewOrderRepository(db, orderUpdatingChannel)
 }
 
 func (api *API) configService() {

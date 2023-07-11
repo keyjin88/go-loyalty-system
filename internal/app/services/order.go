@@ -10,6 +10,7 @@ import (
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"io"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -65,6 +66,28 @@ func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order
 	return order, nil
 }
 
+func (s *OrderService) GetAllOrders(userID int) ([]storage.AllOrderResponse, error) {
+	orders, err := s.orderRepository.GetAllOrders(userID)
+	if err != nil {
+		return nil, err
+	}
+	var response = make([]storage.AllOrderResponse, 0)
+	for _, order := range orders {
+		resp := storage.AllOrderResponse{
+			Number:       order.Number,
+			Status:       order.Status,
+			Accrual:      order.Accrual,
+			UploadedDate: order.CreatedAt,
+			UploadedAt:   order.CreatedAt.Format(time.RFC3339),
+		}
+		response = append(response, resp)
+	}
+	sort.Slice(response, func(i, j int) bool {
+		return response[i].UploadedDate.Before(response[j].UploadedDate)
+	})
+	return response, nil
+}
+
 func WorkerProcessingOrders(ch <-chan storage.Order, host string, repository *storage.OrderRepository) {
 	for order := range ch {
 		logger.Log.Infof("processing %v", order)
@@ -73,11 +96,7 @@ func WorkerProcessingOrders(ch <-chan storage.Order, host string, repository *st
 			logger.Log.Infof("error while processing: %e", err)
 			return
 		}
-		err = repository.Save(&order)
-		if err != nil {
-			logger.Log.Infof("error while saving: %e", err)
-			return
-		}
+		repository.Update(&order)
 	}
 }
 
