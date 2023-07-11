@@ -33,7 +33,7 @@ type WithdrawService interface {
 }
 
 type Claims struct {
-	UserID uint `json:"mustGetReturn"`
+	UserID uint `json:"userID"`
 	jwt.StandardClaims
 }
 

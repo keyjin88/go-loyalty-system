@@ -134,7 +134,7 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 
 		requestContext.EXPECT().GetRawData().
 			Return(tt.getRowData, tt.getRowDataError)
-		requestContext.EXPECT().MustGet("mustGetReturn").
+		requestContext.EXPECT().MustGet(tt.mustGetReturn).
 			Return(tt.mustGetReturn).
 			Times(tt.mustGetCallCount)
 		requestContext.EXPECT().JSON(tt.status, tt.response)

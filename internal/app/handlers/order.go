@@ -15,7 +15,7 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 		return
 	}
 	orderNumber := string(requestBytes)
-	userID := c.MustGet("mustGetReturn").(uint)
+	userID := c.MustGet("userID").(uint)
 	order, err := h.orderService.SaveOrder(storage.NewOrderRequest{Number: orderNumber, UserID: userID})
 	if err != nil {
 		switch {
@@ -37,7 +37,7 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 }
 
 func (h *Handler) GetAllOrders(c RequestContext) {
-	userID := c.MustGet("mustGetReturn").(uint)
+	userID := c.MustGet("userID").(uint)
 	orders, err := h.orderService.GetAllOrders(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})

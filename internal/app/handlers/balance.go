@@ -6,7 +6,7 @@ import (
 )
 
 func (h *Handler) GetBalance(c RequestContext) {
-	userID := c.MustGet("mustGetReturn").(uint)
+	userID := c.MustGet("userID").(uint)
 	response, err := h.userService.GetUserBalance(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
