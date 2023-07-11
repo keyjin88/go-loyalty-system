@@ -7,6 +7,7 @@ import (
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -33,9 +34,9 @@ func NewOrderService(
 
 func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order, error) {
 	// закомментировано, длч облегчния тестирования
-	//if !checkOrderNumber(request.Number) {
-	//	return storage.Order{}, errors.New("order has wrong format")
-	//}
+	if !checkOrderNumber(request.Number) {
+		return storage.Order{}, errors.New("order has wrong format")
+	}
 	var order = storage.Order{
 		Number: request.Number,
 		UserID: request.UserID,
@@ -82,43 +83,30 @@ func (s *OrderService) GetAllOrders(userID uint) ([]storage.AllOrderResponse, er
 }
 
 func checkOrderNumber(orderNumber string) bool {
-	// Удаляем все пробелы из номера заказа
-	orderNumber = removeSpaces(orderNumber)
+	// Удаляем все пробелы из строки
+	orderNumber = strings.ReplaceAll(orderNumber, " ", "")
+
 	// Проверяем, что номер заказа состоит только из цифр
 	_, err := strconv.Atoi(orderNumber)
 	if err != nil {
 		return false
 	}
-	// Проверяем длину номера заказа
-	if len(orderNumber) < 9 || len(orderNumber) > 16 {
-		return false
-	}
-	// Вычисляем контрольную сумму по алгоритму Луна
+
+	// Применяем алгоритм Луна для валидации номера заказа
 	sum := 0
-	for i, digit := range orderNumber {
-		// Преобразуем символ цифры в число
-		num, _ := strconv.Atoi(string(digit))
-		// Удваиваем каждую вторую цифру, начиная с последней
-		if i%2 == len(orderNumber)%2 {
-			num *= 2
-			// Если результат удвоения больше 9, вычитаем 9
-			if num > 9 {
-				num -= 9
+	double := false
+	for i := len(orderNumber) - 1; i >= 0; i-- {
+		digit, _ := strconv.Atoi(string(orderNumber[i]))
+
+		if double {
+			digit *= 2
+			if digit > 9 {
+				digit -= 9
 			}
 		}
-		// Суммируем все цифры
-		sum += num
+		sum += digit
+		double = !double
 	}
-	// Проверяем, что контрольная сумма делится нацело на 10
-	return sum%10 == 0
-}
 
-func removeSpaces(s string) string {
-	result := ""
-	for _, char := range s {
-		if char != ' ' {
-			result += string(char)
-		}
-	}
-	return result
+	return sum%10 == 0
 }
