@@ -9,6 +9,7 @@ import (
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestHandler_ProcessUserOrder(t *testing.T) {
@@ -134,7 +135,7 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 
 		requestContext.EXPECT().GetRawData().
 			Return(tt.getRowData, tt.getRowDataError)
-		requestContext.EXPECT().MustGet(tt.mustGetReturn).
+		requestContext.EXPECT().MustGet("userID").
 			Return(tt.mustGetReturn).
 			Times(tt.mustGetCallCount)
 		requestContext.EXPECT().JSON(tt.status, tt.response)
@@ -148,6 +149,104 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 				orderService: orderService,
 			}
 			h.ProcessUserOrder(requestContext)
+		})
+	}
+}
+
+func TestHandler_GetAllOrders(t *testing.T) {
+	err := logger.Initialize("info")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	now := time.Now()
+
+	tests := []struct {
+		name               string
+		mustGetReturn      uint
+		mustGetCallCount   int
+		getAllOrdersReturn []storage.AllOrderResponse
+		getAllOrdersError  error
+		status             int
+		response           any
+	}{
+		{
+			name:             "Success",
+			mustGetReturn:    101,
+			mustGetCallCount: 1,
+			getAllOrdersReturn: []storage.AllOrderResponse{
+				{
+					Number:       "111111111",
+					Status:       "NEW",
+					Accrual:      123.32,
+					UploadedDate: now,
+					UploadedAt:   now.Format(time.RFC3339),
+				},
+				{
+					Number:       "222222222",
+					Status:       "NEW",
+					Accrual:      321.32,
+					UploadedDate: now,
+					UploadedAt:   now.Format(time.RFC3339),
+				},
+			},
+			getAllOrdersError: nil,
+			status:            http.StatusOK,
+			response: []storage.AllOrderResponse{
+				{
+					Number:       "111111111",
+					Status:       "NEW",
+					Accrual:      123.32,
+					UploadedDate: now,
+					UploadedAt:   now.Format(time.RFC3339),
+				},
+				{
+					Number:       "222222222",
+					Status:       "NEW",
+					Accrual:      321.32,
+					UploadedDate: now,
+					UploadedAt:   now.Format(time.RFC3339),
+				},
+			},
+		},
+		{
+			name:               "Internal Server Error",
+			mustGetReturn:      101,
+			mustGetCallCount:   1,
+			getAllOrdersReturn: []storage.AllOrderResponse{},
+			getAllOrdersError:  errors.New("internal Server Error"),
+			status:             http.StatusInternalServerError,
+			response:           gin.H{"error": "Internal Server Error"},
+		},
+		{
+			name:               "Orders not found",
+			mustGetReturn:      101,
+			mustGetCallCount:   1,
+			getAllOrdersReturn: []storage.AllOrderResponse{},
+			getAllOrdersError:  nil,
+			status:             http.StatusNoContent,
+			response:           gin.H{"error": "orders not found"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			orderService := mocks.NewMockOrderService(ctrl)
+			requestContext := mocks.NewMockRequestContext(ctrl)
+
+			requestContext.EXPECT().MustGet("userID").
+				Return(tt.mustGetReturn).
+				Times(tt.mustGetCallCount)
+			requestContext.EXPECT().JSON(tt.status, tt.response)
+
+			orderService.EXPECT().GetAllOrders(gomock.Any()).Return(tt.getAllOrdersReturn, tt.getAllOrdersError)
+
+			h := &Handler{
+				orderService: orderService,
+			}
+			h.GetAllOrders(requestContext)
 		})
 	}
 }

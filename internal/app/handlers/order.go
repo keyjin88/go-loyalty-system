@@ -41,9 +41,11 @@ func (h *Handler) GetAllOrders(c RequestContext) {
 	orders, err := h.orderService.GetAllOrders(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
 	}
 	if len(orders) == 0 {
 		c.JSON(http.StatusNoContent, gin.H{"error": "orders not found"})
+		return
 	}
 	c.JSON(http.StatusOK, orders)
 }
