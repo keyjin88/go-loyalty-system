@@ -18,12 +18,12 @@ type AccrualDetails struct {
 }
 
 type OrderService struct {
-	orderRepository        *storage.OrderRepository
+	orderRepository        OrderRepository
 	orderProcessingChannel chan storage.Order
 }
 
 func NewOrderService(
-	orderRepository *storage.OrderRepository,
+	orderRepository OrderRepository,
 	channel chan storage.Order,
 ) *OrderService {
 	return &OrderService{

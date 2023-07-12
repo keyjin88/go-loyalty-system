@@ -8,11 +8,11 @@ import (
 )
 
 type WithdrawService struct {
-	withdrawRepository *storage.WithdrawRepository
-	userRepository     *storage.UserRepository
+	withdrawRepository WithdrawRepository
+	userRepository     UserRepository
 }
 
-func NewWithdrawService(withdrawRepository *storage.WithdrawRepository, userRepository *storage.UserRepository) *WithdrawService {
+func NewWithdrawService(withdrawRepository WithdrawRepository, userRepository UserRepository) *WithdrawService {
 	return &WithdrawService{
 		withdrawRepository: withdrawRepository,
 		userRepository:     userRepository,
