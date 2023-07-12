@@ -129,10 +129,9 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 			response:           gin.H{"error": "Internal Server Error"},
 		},
 	}
+	orderService := mocks.NewMockOrderService(ctrl)
+	requestContext := mocks.NewMockRequestContext(ctrl)
 	for _, tt := range tests {
-		orderService := mocks.NewMockOrderService(ctrl)
-		requestContext := mocks.NewMockRequestContext(ctrl)
-
 		requestContext.EXPECT().GetRawData().
 			Return(tt.getRowData, tt.getRowDataError)
 		requestContext.EXPECT().MustGet("userID").
@@ -163,6 +162,15 @@ func TestHandler_GetAllOrders(t *testing.T) {
 	defer ctrl.Finish()
 
 	now := time.Now()
+	orders := []storage.AllOrderResponse{
+		{
+			Number:       "111111111",
+			Status:       "NEW",
+			Accrual:      123.32,
+			UploadedDate: now,
+			UploadedAt:   now.Format(time.RFC3339),
+		},
+	}
 
 	tests := []struct {
 		name               string
@@ -174,43 +182,13 @@ func TestHandler_GetAllOrders(t *testing.T) {
 		response           any
 	}{
 		{
-			name:             "Success",
-			mustGetReturn:    101,
-			mustGetCallCount: 1,
-			getAllOrdersReturn: []storage.AllOrderResponse{
-				{
-					Number:       "111111111",
-					Status:       "NEW",
-					Accrual:      123.32,
-					UploadedDate: now,
-					UploadedAt:   now.Format(time.RFC3339),
-				},
-				{
-					Number:       "222222222",
-					Status:       "NEW",
-					Accrual:      321.32,
-					UploadedDate: now,
-					UploadedAt:   now.Format(time.RFC3339),
-				},
-			},
-			getAllOrdersError: nil,
-			status:            http.StatusOK,
-			response: []storage.AllOrderResponse{
-				{
-					Number:       "111111111",
-					Status:       "NEW",
-					Accrual:      123.32,
-					UploadedDate: now,
-					UploadedAt:   now.Format(time.RFC3339),
-				},
-				{
-					Number:       "222222222",
-					Status:       "NEW",
-					Accrual:      321.32,
-					UploadedDate: now,
-					UploadedAt:   now.Format(time.RFC3339),
-				},
-			},
+			name:               "Success",
+			mustGetReturn:      101,
+			mustGetCallCount:   1,
+			getAllOrdersReturn: orders,
+			getAllOrdersError:  nil,
+			status:             http.StatusOK,
+			response:           orders,
 		},
 		{
 			name:               "Internal Server Error",
@@ -231,12 +209,11 @@ func TestHandler_GetAllOrders(t *testing.T) {
 			response:           gin.H{"error": "orders not found"},
 		},
 	}
+	orderService := mocks.NewMockOrderService(ctrl)
+	requestContext := mocks.NewMockRequestContext(ctrl)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			orderService := mocks.NewMockOrderService(ctrl)
-			requestContext := mocks.NewMockRequestContext(ctrl)
-
-			requestContext.EXPECT().MustGet("userID").
+			requestContext.EXPECT().MustGet(gomock.Any()).
 				Return(tt.mustGetReturn).
 				Times(tt.mustGetCallCount)
 			requestContext.EXPECT().JSON(tt.status, tt.response)

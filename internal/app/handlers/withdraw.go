@@ -24,26 +24,31 @@ func (h *Handler) SaveWithdraw(c RequestContext) {
 	}
 	req.UserID = c.MustGet("userID").(uint)
 	err = h.withdrawService.SaveWithdraw(req)
-	if err != nil && err.Error() == "not enough funds" {
-		logger.Log.Infof("not enough funds: %v", err)
-		c.JSON(http.StatusPaymentRequired, gin.H{"error": "not enough funds"})
-		return
-	} else if err != nil {
+	if err != nil {
+		if err.Error() == "not enough funds" {
+			logger.Log.Infof("not enough funds: %v", err)
+			c.JSON(http.StatusPaymentRequired, gin.H{"error": "Not enough funds"})
+			return
+		}
 		logger.Log.Infof("error while saving withdraw: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while saving withdraw"})
 		return
 	}
-	c.JSON(http.StatusOK, "Withdrawal successfully saved")
+	c.JSON(http.StatusOK, gin.H{"info": "Withdrawal successfully saved"})
 }
 
 func (h *Handler) GetAllWithdrawals(c RequestContext) {
 	userID := c.MustGet("userID").(uint)
 	withdrawals, err := h.withdrawService.GetAllWithdrawals(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		logger.Log.Infof("Internal server error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
 	}
 	if len(withdrawals) == 0 {
+		logger.Log.Infof("Withdrawals are empty")
 		c.JSON(http.StatusNoContent, gin.H{"error": "withdrawal not found"})
+		return
 	}
 	c.JSON(http.StatusOK, withdrawals)
 }
