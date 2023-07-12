@@ -3,13 +3,13 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/keyjin88/go-loyalty-system/internal/app/config"
+	"github.com/keyjin88/go-loyalty-system/internal/app/daemons"
 	"github.com/keyjin88/go-loyalty-system/internal/app/handlers"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
 	"github.com/keyjin88/go-loyalty-system/internal/app/middleware"
 	"github.com/keyjin88/go-loyalty-system/internal/app/middleware/compressor"
 	"github.com/keyjin88/go-loyalty-system/internal/app/services"
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
-	"github.com/keyjin88/go-loyalty-system/internal/app/workers"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -114,5 +114,5 @@ func (api *API) configService(channel chan storage.Order) {
 }
 
 func (api *API) configWorkers(db *gorm.DB, channel chan storage.Order) {
-	go workers.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db)
+	go daemons.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db)
 }

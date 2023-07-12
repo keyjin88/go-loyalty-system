@@ -1,4 +1,4 @@
-package workers
+package daemons
 
 import (
 	"encoding/json"
