@@ -1,9 +1,10 @@
-package services
+package workers
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
+	"github.com/keyjin88/go-loyalty-system/internal/app/services"
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"gorm.io/gorm"
 	"io"
@@ -54,7 +55,7 @@ func getOrderDetails(order *storage.Order, host string) {
 				logger.Log.Infof("Error reading response")
 				return
 			}
-			var details AccrualDetails
+			var details services.AccrualDetails
 			err = json.Unmarshal(body, &details)
 			if err != nil {
 				logger.Log.Infof("Error unmarshalling response")
