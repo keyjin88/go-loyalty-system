@@ -30,7 +30,7 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 		}
 		if errors.Is(err, ErrOrderAlreadyUploaded) {
 			logger.Log.Infof("Order already uploaded by another user")
-			c.JSON(http.StatusOK, gin.H{"error": "order already uploaded by another user"})
+			c.JSON(http.StatusConflict, gin.H{"error": "order already uploaded by another user"})
 			return
 		}
 		if errors.Is(err, ErrOrderHasWrongFormat) {
