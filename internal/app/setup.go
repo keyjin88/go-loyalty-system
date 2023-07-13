@@ -69,55 +69,27 @@ func (api *API) Start() error {
 	// Запускаем HTTP-сервер в отдельной горутине
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Ошибка при запуске сервера: %v", err)
+			logger.Log.Infof("Error while start server")
 		}
 	}()
-
-	log.Println("Сервер запущен")
-
+	logger.Log.Infof("Server started")
 	// Ожидаем получения сигнала остановки
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Получен сигнал остановки")
-
+	logger.Log.Infof("Stop signal received")
 	// Отменяем контекст для graceful shutdown
 	cancel()
-
 	// Устанавливаем таймаут для graceful shutdown
 	ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelShutdown()
 
 	// Останавливаем HTTP-сервер
 	if err := srv.Shutdown(ctxShutdown); err != nil {
-		log.Fatalf("Ошибка при остановке сервера: %v", err)
+		logger.Log.Infof("Error shutting down")
 	}
-
 	log.Println("Сервер остановлен")
-
 	return nil
-}
-
-func (api *API) StartOne() error {
-	if err := logger.Initialize(api.config.LogLevel); err != nil {
-		return err
-	}
-
-	api.config.InitConfig()
-	api.configureRouter()
-	db := api.ConfigDBConnection()
-	api.configStorage(db)
-	// Канал для обработки заказов через сервер Accrual
-	// Если уже есть пулл горутин, то насколько важна буферизация канала? Или я чего-то не понял?
-	orderProcessingChannel := make(chan entities.Order, api.config.ProcessingChannelBufferSize)
-	mutex := &sync.Mutex{}
-	api.configService(orderProcessingChannel, mutex)
-	api.configHandlers()
-	api.configWorkers(db, orderProcessingChannel, mutex)
-
-	logger.Log.Infof("Running server. Address: %s |DB URI: %s |Gin release mode: %v |Log level: %s |accrual system address: %s",
-		api.config.ServerAddress, api.config.DataBaseURI, api.config.GinReleaseMode, api.config.LogLevel, api.config.AccrualSystemAddress)
-	return http.ListenAndServe(api.config.ServerAddress, api.router)
 }
 
 func (api *API) ConfigDBConnection() *gorm.DB {
