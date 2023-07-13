@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 	"net/http"
 )
 
 func (h *Handler) SaveWithdraw(c RequestContext) {
-	var req storage.WithdrawRequest
+	var req models.WithdrawRequest
 	requestBytes, err := c.GetRawData()
 	if err != nil {
 		logger.Log.Infof("error while reading request: %v", err)
@@ -23,7 +24,11 @@ func (h *Handler) SaveWithdraw(c RequestContext) {
 		return
 	}
 	req.UserID = c.MustGet("userID").(uint)
-	err = h.withdrawService.SaveWithdraw(req)
+	err = h.withdrawService.SaveWithdraw(dto.WithdrawDTO{
+		OrderNumber: req.Order,
+		Sum:         req.Sum,
+		UserID:      req.UserID,
+	})
 	if err != nil {
 		if err.Error() == "not enough funds" {
 			logger.Log.Infof("not enough funds: %v", err)

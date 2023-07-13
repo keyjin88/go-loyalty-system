@@ -2,7 +2,9 @@ package services
 
 import (
 	"errors"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 	"sort"
 	"time"
 )
@@ -19,24 +21,24 @@ func NewWithdrawService(withdrawRepository WithdrawRepository, userRepository Us
 	}
 }
 
-func (s *WithdrawService) SaveWithdraw(request storage.WithdrawRequest) error {
-	user, err := s.userRepository.FindUserByID(request.UserID)
+func (s *WithdrawService) SaveWithdraw(withdrawDTO dto.WithdrawDTO) error {
+	user, err := s.userRepository.FindUserByID(withdrawDTO.UserID)
 	if err != nil {
 		return err
 	}
-	err = s.withdrawRepository.Save(&storage.Withdraw{
-		OrderNumber: request.Order,
-		Sum:         request.Sum,
+	err = s.withdrawRepository.Save(&entities.Withdraw{
+		OrderNumber: withdrawDTO.OrderNumber,
+		Sum:         withdrawDTO.Sum,
 		UserID:      user.ID,
 	})
 	if err != nil {
 		return err
 	}
-	if user.Balance < request.Sum {
+	if user.Balance < withdrawDTO.Sum {
 		return errors.New("not enough funds")
 	}
-	user.Balance -= request.Sum
-	user.Withdrawn += request.Sum
+	user.Balance -= withdrawDTO.Sum
+	user.Withdrawn += withdrawDTO.Sum
 	err = s.userRepository.Update(&user)
 	if err != nil {
 		return err
@@ -44,14 +46,14 @@ func (s *WithdrawService) SaveWithdraw(request storage.WithdrawRequest) error {
 	return nil
 }
 
-func (s *WithdrawService) GetAllWithdrawals(userID uint) ([]storage.WithdrawResponse, error) {
+func (s *WithdrawService) GetAllWithdrawals(userID uint) ([]models.WithdrawResponse, error) {
 	withdrawals, err := s.withdrawRepository.GetWithdrawals(userID)
 	if err != nil {
 		return nil, err
 	}
-	var response = make([]storage.WithdrawResponse, 0)
+	var response = make([]models.WithdrawResponse, 0)
 	for _, withdraw := range withdrawals {
-		resp := storage.WithdrawResponse{
+		resp := models.WithdrawResponse{
 			Order:         withdraw.OrderNumber,
 			Sum:           withdraw.Sum,
 			ProcessedDate: withdraw.CreatedAt,

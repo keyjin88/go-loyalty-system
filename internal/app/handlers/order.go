@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 	}
 	orderNumber := string(requestBytes)
 	userID := c.MustGet("userID").(uint)
-	order, err := h.orderService.SaveOrder(storage.NewOrderRequest{Number: orderNumber, UserID: userID})
+	order, err := h.orderService.SaveOrder(dto.OrderDTO{Number: orderNumber, UserID: userID})
 	if err != nil {
 		if errors.Is(err, ErrOrderAlreadyUploadedByUser) {
 			logger.Log.Infof("Order already uploaded by user %v", userID)

@@ -4,24 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 	"github.com/keyjin88/go-loyalty-system/internal/app/services"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"gorm.io/gorm"
 	"io"
 	"net/http"
 	"time"
 )
 
-func WorkerProcessingOrders(ch <-chan storage.Order, host string, db *gorm.DB) {
+func WorkerProcessingOrders(ch <-chan entities.Order, host string, db *gorm.DB) {
 	for order := range ch {
 		logger.Log.Infof("processing %v", order)
-		go func(order storage.Order) {
+		go func(order entities.Order) {
 			getOrderDetails(&order, host)
 			err := db.Transaction(func(tx *gorm.DB) error {
 				if err := tx.Model(order).Updates(order).Error; err != nil {
 					return err
 				}
-				var savedUser storage.User
+				var savedUser entities.User
 				if err := tx.First(&savedUser, "id = ?", order.UserID).Error; err != nil {
 					return err
 				}
@@ -38,7 +38,7 @@ func WorkerProcessingOrders(ch <-chan storage.Order, host string, db *gorm.DB) {
 	}
 }
 
-func getOrderDetails(order *storage.Order, host string) {
+func getOrderDetails(order *entities.Order, host string) {
 	url := fmt.Sprintf(host+"/api/orders/%s", order.Number)
 	maxRetries := 5
 	retryInterval := 1 * time.Second

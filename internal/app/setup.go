@@ -8,6 +8,7 @@ import (
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
 	"github.com/keyjin88/go-loyalty-system/internal/app/middleware"
 	"github.com/keyjin88/go-loyalty-system/internal/app/middleware/compressor"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 	"github.com/keyjin88/go-loyalty-system/internal/app/services"
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"gorm.io/driver/postgres"
@@ -44,7 +45,7 @@ func (api *API) Start() error {
 	db := api.ConfigDBConnection()
 	api.configStorage(db)
 	// Канал для обработки заказов через сервер Accrual
-	orderProcessingChannel := make(chan storage.Order)
+	orderProcessingChannel := make(chan entities.Order)
 	api.configService(orderProcessingChannel)
 	api.configHandlers()
 	api.configWorkers(db, orderProcessingChannel)
@@ -104,7 +105,7 @@ func (api *API) configStorage(db *gorm.DB) {
 	api.withdrawRepository = storage.NewWithdrawRepository(db)
 }
 
-func (api *API) configService(channel chan storage.Order) {
+func (api *API) configService(channel chan entities.Order) {
 	api.userService = services.NewUserService(api.userRepository)
 	api.withdrawService = services.NewWithdrawService(api.withdrawRepository, api.userRepository)
 	api.orderService = services.NewOrderService(
@@ -113,6 +114,6 @@ func (api *API) configService(channel chan storage.Order) {
 	)
 }
 
-func (api *API) configWorkers(db *gorm.DB, channel chan storage.Order) {
+func (api *API) configWorkers(db *gorm.DB, channel chan entities.Order) {
 	go daemons.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db)
 }

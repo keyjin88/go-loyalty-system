@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 	"gorm.io/gorm"
 	"log"
 )
@@ -10,7 +11,7 @@ type OrderRepository struct {
 }
 
 func NewOrderRepository(db *gorm.DB) *OrderRepository {
-	err := db.AutoMigrate(&Order{})
+	err := db.AutoMigrate(&entities.Order{})
 	if err != nil {
 		log.Fatal("failed to migrate orders table")
 	}
@@ -19,7 +20,7 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
 	}
 }
 
-func (r *OrderRepository) Save(order *Order) error {
+func (r *OrderRepository) Save(order *entities.Order) error {
 	err := r.db.Create(&order).Error
 	if err != nil {
 		return err
@@ -27,17 +28,17 @@ func (r *OrderRepository) Save(order *Order) error {
 	return nil
 }
 
-func (r *OrderRepository) GetOrderByNumber(number string) (Order, error) {
-	var saverOrder Order
+func (r *OrderRepository) GetOrderByNumber(number string) (entities.Order, error) {
+	var saverOrder entities.Order
 	tx := r.db.First(&saverOrder, "number = ?", number)
 	if tx.Error != nil {
-		return Order{}, tx.Error
+		return entities.Order{}, tx.Error
 	}
 	return saverOrder, nil
 }
 
-func (r *OrderRepository) GetAllOrders(userID uint) ([]Order, error) {
-	var orders []Order
+func (r *OrderRepository) GetAllOrders(userID uint) ([]entities.Order, error) {
+	var orders []entities.Order
 	result := r.db.Where("user_id = ?", userID).Find(&orders)
 	if result.Error != nil {
 		return nil, result.Error

@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 	"sort"
 	"strconv"
 	"strings"
@@ -19,12 +21,12 @@ type AccrualDetails struct {
 
 type OrderService struct {
 	orderRepository        OrderRepository
-	orderProcessingChannel chan storage.Order
+	orderProcessingChannel chan entities.Order
 }
 
 func NewOrderService(
 	orderRepository OrderRepository,
-	channel chan storage.Order,
+	channel chan entities.Order,
 ) *OrderService {
 	return &OrderService{
 		orderRepository:        orderRepository,
@@ -32,42 +34,42 @@ func NewOrderService(
 	}
 }
 
-func (s *OrderService) SaveOrder(request storage.NewOrderRequest) (storage.Order, error) {
+func (s *OrderService) SaveOrder(orderDTO dto.OrderDTO) (entities.Order, error) {
 	// закомментировано, длч облегчния тестирования
-	if !checkOrderNumber(request.Number) {
-		return storage.Order{}, errors.New("order has wrong format")
+	if !checkOrderNumber(orderDTO.Number) {
+		return entities.Order{}, errors.New("order has wrong format")
 	}
-	var order = storage.Order{
-		Number: request.Number,
-		UserID: request.UserID,
+	var order = entities.Order{
+		Number: orderDTO.Number,
+		UserID: orderDTO.UserID,
 	}
 	err := s.orderRepository.Save(&order)
 	if err != nil {
 		pgErr, ok := err.(*pgconn.PgError)
 		if ok && pgErr.Code == pgerrcode.UniqueViolation {
-			order, err = s.orderRepository.GetOrderByNumber(request.Number)
+			order, err = s.orderRepository.GetOrderByNumber(orderDTO.Number)
 			if err != nil {
-				return storage.Order{}, err
+				return entities.Order{}, err
 			}
-			if order.UserID == request.UserID {
-				return storage.Order{}, errors.New("order already uploaded by this user")
+			if order.UserID == orderDTO.UserID {
+				return entities.Order{}, errors.New("order already uploaded by this user")
 			}
-			return storage.Order{}, errors.New("order already uploaded by another user")
+			return entities.Order{}, errors.New("order already uploaded by another user")
 		}
-		return storage.Order{}, err
+		return entities.Order{}, err
 	}
 	s.orderProcessingChannel <- order
 	return order, nil
 }
 
-func (s *OrderService) GetAllOrders(userID uint) ([]storage.AllOrderResponse, error) {
+func (s *OrderService) GetAllOrders(userID uint) ([]models.AllOrderResponse, error) {
 	orders, err := s.orderRepository.GetAllOrders(userID)
 	if err != nil {
 		return nil, err
 	}
-	var response = make([]storage.AllOrderResponse, 0)
+	var response = make([]models.AllOrderResponse, 0)
 	for _, order := range orders {
-		resp := storage.AllOrderResponse{
+		resp := models.AllOrderResponse{
 			Number:       order.Number,
 			Status:       order.Status,
 			Accrual:      order.Accrual,

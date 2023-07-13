@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 )
 
 //go:generate mockgen -destination=mocks/request_context.go -package=mocks . RequestContext
@@ -15,21 +17,21 @@ type RequestContext interface {
 
 //go:generate mockgen -destination=mocks/user_service.go -package=mocks . UserService
 type UserService interface {
-	SaveUser(request storage.AuthRequest) (storage.User, error)
-	GetUserByUserName(request storage.AuthRequest) (storage.User, error)
-	GetUserBalance(userID uint) (storage.BalanceResponse, error)
+	SaveUser(userDTO dto.UserDTO) (entities.User, error)
+	GetUserByUserName(userDTO dto.UserDTO) (entities.User, error)
+	GetUserBalance(userID uint) (models.BalanceResponse, error)
 }
 
 //go:generate mockgen -destination=mocks/order_service.go -package=mocks . OrderService
 type OrderService interface {
-	SaveOrder(orderNumber storage.NewOrderRequest) (storage.Order, error)
-	GetAllOrders(userID uint) ([]storage.AllOrderResponse, error)
+	SaveOrder(orderNumber dto.OrderDTO) (entities.Order, error)
+	GetAllOrders(userID uint) ([]models.AllOrderResponse, error)
 }
 
 //go:generate mockgen -destination=mocks/withdraw_service.go -package=mocks . WithdrawService
 type WithdrawService interface {
-	SaveWithdraw(request storage.WithdrawRequest) error
-	GetAllWithdrawals(userID uint) ([]storage.WithdrawResponse, error)
+	SaveWithdraw(withdrawDTO dto.WithdrawDTO) error
+	GetAllWithdrawals(userID uint) ([]models.WithdrawResponse, error)
 }
 
 type Claims struct {
