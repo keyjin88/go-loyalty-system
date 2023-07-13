@@ -45,7 +45,7 @@ func (api *API) Start() error {
 	db := api.ConfigDBConnection()
 	api.configStorage(db)
 	// Канал для обработки заказов через сервер Accrual
-	orderProcessingChannel := make(chan entities.Order)
+	orderProcessingChannel := make(chan entities.Order, api.config.ProcessingChannelBufferSize)
 	api.configService(orderProcessingChannel)
 	api.configHandlers()
 	api.configWorkers(db, orderProcessingChannel)

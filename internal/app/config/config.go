@@ -7,13 +7,14 @@ import (
 )
 
 type Config struct {
-	ServerAddress        string `env:"RUN_ADDRESS"`
-	GinReleaseMode       bool   `env:"GIN_MODE"`
-	LogLevel             string `env:"LOG_LEVEL"`
-	DataBaseURI          string `env:"DATABASE_URI"`
-	SecretKey            string `env:"SECRET_KEY"`
-	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
-	WorkerPoolSize       int    `env:"WORKER_POOL_SIZE"`
+	ServerAddress               string `env:"RUN_ADDRESS"`
+	GinReleaseMode              bool   `env:"GIN_MODE"`
+	LogLevel                    string `env:"LOG_LEVEL"`
+	DataBaseURI                 string `env:"DATABASE_URI"`
+	SecretKey                   string `env:"SECRET_KEY"`
+	AccrualSystemAddress        string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	WorkerPoolSize              int    `env:"WORKER_POOL_SIZE"`
+	ProcessingChannelBufferSize int    `env:"PROCESSING_CHANNEL_BUFFER_SIZE"`
 }
 
 func NewConfig() *Config {
@@ -32,6 +33,7 @@ func (config *Config) InitConfig() {
 	// Оставил для локальных тестов
 	flag.StringVar(&config.DataBaseURI, "d", "host=localhost user=pgadmin password=postgres dbname=loyaltydb port=5432 sslmode=disable", "database URI")
 	flag.IntVar(&config.WorkerPoolSize, "wps", 10, "Worker pool size")
+	flag.IntVar(&config.ProcessingChannelBufferSize, "pcbs", 10, "Processing channel buffer size")
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 	// Пробуем распарсить переменные окружения, если их не будет, то оставляем значения по умолчанию из флагов
