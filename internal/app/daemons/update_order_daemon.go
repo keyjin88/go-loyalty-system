@@ -16,26 +16,37 @@ func WorkerProcessingOrders(ch <-chan entities.Order, host string, db *gorm.DB, 
 	workerPool := make(chan struct{}, maxWorkers) // Создаем пул горутин
 	for order := range ch {
 		workerPool <- struct{}{} // Заполняем пул горутин
-		go func(order entities.Order) {
+		go func(orderID uint, accrual float64) {
 			defer func() {
 				<-workerPool // Освобождаем горутину при завершении
 			}()
+			var order entities.Order
+			if err := db.First(&order, orderID).Error; err != nil {
+				logger.Log.Errorf("Failed to retrieve order %v: %v", orderID, err)
+				return
+			}
 			getOrderDetails(&order, host)
-			err := db.Transaction(func(tx *gorm.DB) error {
-				if err := tx.Model(order).Updates(order).Error; err != nil {
-					return err
-				}
-				var savedUser entities.User
-				if err := tx.First(&savedUser, "id = ?", order.UserID).Error; err != nil {
-					return err
-				}
-				savedUser.Balance += order.Accrual
-				return tx.Updates(&savedUser).Error
-			})
+			var savedUser entities.User
+			if err := db.First(&savedUser, "id = ?", order.UserID).Error; err != nil {
+				logger.Log.Errorf("Failed to retrieve user %v: %v", order.UserID, err)
+				return
+			}
+			err := db.Set("gorm:query_option", "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE").
+				Transaction(func(tx *gorm.DB) error {
+					if err := tx.Model(order).Updates(order).Error; err != nil {
+						return err
+					}
+					var savedUser entities.User
+					if err := tx.First(&savedUser, "id = ?", order.UserID).Error; err != nil {
+						return err
+					}
+					savedUser.Balance += order.Accrual
+					return tx.Updates(&savedUser).Error
+				})
 			if err != nil {
 				logger.Log.Error("Failed to process order %v: %v", order.ID, err)
 			}
-		}(order)
+		}(order.ID, order.Accrual)
 	}
 }
 

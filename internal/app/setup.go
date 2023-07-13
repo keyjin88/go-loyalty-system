@@ -45,6 +45,7 @@ func (api *API) Start() error {
 	db := api.ConfigDBConnection()
 	api.configStorage(db)
 	// Канал для обработки заказов через сервер Accrual
+	// Если уже есть пулл горутин, то насколько важна буферизация канала? Или я чего-то не понял?
 	orderProcessingChannel := make(chan entities.Order, api.config.ProcessingChannelBufferSize)
 	api.configService(orderProcessingChannel)
 	api.configHandlers()
