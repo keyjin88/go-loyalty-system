@@ -115,5 +115,5 @@ func (api *API) configService(channel chan entities.Order) {
 }
 
 func (api *API) configWorkers(db *gorm.DB, channel chan entities.Order) {
-	go daemons.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db)
+	go daemons.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db, api.config.WorkerPoolSize)
 }

@@ -13,6 +13,7 @@ type Config struct {
 	DataBaseURI          string `env:"DATABASE_URI"`
 	SecretKey            string `env:"SECRET_KEY"`
 	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	WorkerPoolSize       int    `env:"WORKER_POOL_SIZE"`
 }
 
 func NewConfig() *Config {
@@ -30,6 +31,7 @@ func (config *Config) InitConfig() {
 	//flag.StringVar(&config.DataBaseURI, "d", "", "database dsn")
 	// Оставил для локальных тестов
 	flag.StringVar(&config.DataBaseURI, "d", "host=localhost user=pgadmin password=postgres dbname=loyaltydb port=5432 sslmode=disable", "database URI")
+	flag.IntVar(&config.WorkerPoolSize, "wps", 10, "Worker pool size")
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 	// Пробуем распарсить переменные окружения, если их не будет, то оставляем значения по умолчанию из флагов

@@ -12,10 +12,14 @@ import (
 	"time"
 )
 
-func WorkerProcessingOrders(ch <-chan entities.Order, host string, db *gorm.DB) {
+func WorkerProcessingOrders(ch <-chan entities.Order, host string, db *gorm.DB, maxWorkers int) {
+	workerPool := make(chan struct{}, maxWorkers) // Создаем пул горутин
 	for order := range ch {
-		logger.Log.Infof("processing %v", order)
+		workerPool <- struct{}{} // Заполняем пул горутин
 		go func(order entities.Order) {
+			defer func() {
+				<-workerPool // Освобождаем горутину при завершении
+			}()
 			getOrderDetails(&order, host)
 			err := db.Transaction(func(tx *gorm.DB) error {
 				if err := tx.Model(order).Updates(order).Error; err != nil {
