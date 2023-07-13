@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/keyjin88/go-loyalty-system/internal/app/config"
 	"github.com/keyjin88/go-loyalty-system/internal/app/daemons"
@@ -15,10 +16,14 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"time"
 )
 
 type API struct {
+	ctx                context.Context
 	config             *config.Config
 	router             *gin.Engine
 	handlers           *handlers.Handler
@@ -32,11 +37,14 @@ type API struct {
 
 func New() *API {
 	return &API{
+		ctx:    context.Background(),
 		config: config.NewConfig(),
 	}
 }
 
 func (api *API) Start() error {
+	ctx, cancel := context.WithCancel(api.ctx)
+	defer cancel()
 	if err := logger.Initialize(api.config.LogLevel); err != nil {
 		return err
 	}
@@ -53,9 +61,40 @@ func (api *API) Start() error {
 	api.configHandlers()
 	api.configWorkers(db, orderProcessingChannel, mutex)
 
+	// Ожидаем получения сигнала ОС для graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Получен сигнал остановки")
+	// Отменяем контекст для graceful shutdown
+	cancel()
 	logger.Log.Infof("Running server. Address: %s |DB URI: %s |Gin release mode: %v |Log level: %s |accrual system address: %s",
 		api.config.ServerAddress, api.config.DataBaseURI, api.config.GinReleaseMode, api.config.LogLevel, api.config.AccrualSystemAddress)
-	return http.ListenAndServe(api.config.ServerAddress, api.router)
+	srv := &http.Server{Addr: api.config.ServerAddress, Handler: api.router}
+
+	// Останавливаем сервер с использованием контекста
+	go func() {
+		<-ctx.Done()
+		ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelShutdown()
+		conn, err := db.DB()
+		if err != nil {
+			logger.Log.Infof("Error while connecting to database: %v", err)
+			return
+		}
+		err = conn.Close()
+		if err != nil {
+			logger.Log.Infof("Error while closing connection: %v", err)
+			return
+		}
+		err = srv.Shutdown(ctxShutdown)
+		if err != nil {
+			logger.Log.Infof("Error while shutting down")
+			return
+		}
+	}()
+	log.Println("Сервер остановлен")
+	return nil
 }
 
 func (api *API) ConfigDBConnection() *gorm.DB {
