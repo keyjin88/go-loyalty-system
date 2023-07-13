@@ -1,9 +1,9 @@
 package services
 
 import (
-	"errors"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/keyjin88/go-loyalty-system/internal/app/handlers"
 	"github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
 	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
@@ -37,7 +37,7 @@ func NewOrderService(
 func (s *OrderService) SaveOrder(orderDTO dto.OrderDTO) (entities.Order, error) {
 	// закомментировано, длч облегчния тестирования
 	if !checkOrderNumber(orderDTO.Number) {
-		return entities.Order{}, errors.New("order has wrong format")
+		return entities.Order{}, handlers.ErrOrderHasWrongFormat
 	}
 	var order = entities.Order{
 		Number: orderDTO.Number,
@@ -52,9 +52,9 @@ func (s *OrderService) SaveOrder(orderDTO dto.OrderDTO) (entities.Order, error) 
 				return entities.Order{}, err
 			}
 			if order.UserID == orderDTO.UserID {
-				return entities.Order{}, errors.New("order already uploaded by this user")
+				return entities.Order{}, handlers.ErrOrderAlreadyUploadedByUser
 			}
-			return entities.Order{}, errors.New("order already uploaded by another user")
+			return entities.Order{}, handlers.ErrOrderAlreadyUploaded
 		}
 		return entities.Order{}, err
 	}

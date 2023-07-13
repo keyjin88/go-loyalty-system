@@ -26,13 +26,10 @@ func WorkerProcessingOrders(ch <-chan entities.Order, host string, db *gorm.DB) 
 					return err
 				}
 				savedUser.Balance += order.Accrual
-				if err := tx.Updates(&savedUser).Error; err != nil {
-					return err
-				}
-				return nil
+				return tx.Updates(&savedUser).Error
 			})
 			if err != nil {
-				logger.Log.Infof("Failed to process order %v: %v", order.ID, err)
+				logger.Log.Error("Failed to process order %v: %v", order.ID, err)
 			}
 		}(order)
 	}
