@@ -9,14 +9,17 @@ import (
 	"gorm.io/gorm"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 )
 
-func WorkerProcessingOrders(ch <-chan entities.Order, host string, db *gorm.DB, maxWorkers int) {
+func WorkerProcessingOrders(ch <-chan entities.Order, host string, db *gorm.DB, maxWorkers int, mutex *sync.Mutex) {
 	workerPool := make(chan struct{}, maxWorkers) // Создаем пул горутин
 	for order := range ch {
 		workerPool <- struct{}{} // Заполняем пул горутин
 		go func(orderID uint, accrual float64) {
+			mutex.Lock()
+			defer mutex.Unlock()
 			defer func() {
 				<-workerPool // Освобождаем горутину при завершении
 			}()

@@ -6,22 +6,31 @@ import (
 	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 	"sort"
+	"sync"
 	"time"
 )
 
 type WithdrawService struct {
 	withdrawRepository WithdrawRepository
 	userRepository     UserRepository
+	mutex              *sync.Mutex
 }
 
-func NewWithdrawService(withdrawRepository WithdrawRepository, userRepository UserRepository) *WithdrawService {
+func NewWithdrawService(
+	withdrawRepository WithdrawRepository,
+	userRepository UserRepository,
+	mutex *sync.Mutex,
+) *WithdrawService {
 	return &WithdrawService{
 		withdrawRepository: withdrawRepository,
 		userRepository:     userRepository,
+		mutex:              mutex,
 	}
 }
 
 func (s *WithdrawService) SaveWithdraw(withdrawDTO dto.WithdrawDTO) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	user, err := s.userRepository.FindUserByID(withdrawDTO.UserID)
 	if err != nil {
 		return err

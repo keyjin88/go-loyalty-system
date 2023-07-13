@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"sync"
 )
 
 type API struct {
@@ -47,9 +48,10 @@ func (api *API) Start() error {
 	// Канал для обработки заказов через сервер Accrual
 	// Если уже есть пулл горутин, то насколько важна буферизация канала? Или я чего-то не понял?
 	orderProcessingChannel := make(chan entities.Order, api.config.ProcessingChannelBufferSize)
-	api.configService(orderProcessingChannel)
+	mutex := &sync.Mutex{}
+	api.configService(orderProcessingChannel, mutex)
 	api.configHandlers()
-	api.configWorkers(db, orderProcessingChannel)
+	api.configWorkers(db, orderProcessingChannel, mutex)
 
 	logger.Log.Infof("Running server. Address: %s |DB URI: %s |Gin release mode: %v |Log level: %s |accrual system address: %s",
 		api.config.ServerAddress, api.config.DataBaseURI, api.config.GinReleaseMode, api.config.LogLevel, api.config.AccrualSystemAddress)
@@ -106,15 +108,15 @@ func (api *API) configStorage(db *gorm.DB) {
 	api.withdrawRepository = storage.NewWithdrawRepository(db)
 }
 
-func (api *API) configService(channel chan entities.Order) {
+func (api *API) configService(channel chan entities.Order, mutex *sync.Mutex) {
 	api.userService = services.NewUserService(api.userRepository)
-	api.withdrawService = services.NewWithdrawService(api.withdrawRepository, api.userRepository)
+	api.withdrawService = services.NewWithdrawService(api.withdrawRepository, api.userRepository, mutex)
 	api.orderService = services.NewOrderService(
 		api.orderRepository,
 		channel,
 	)
 }
 
-func (api *API) configWorkers(db *gorm.DB, channel chan entities.Order) {
-	go daemons.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db, api.config.WorkerPoolSize)
+func (api *API) configWorkers(db *gorm.DB, channel chan entities.Order, mutex *sync.Mutex) {
+	go daemons.WorkerProcessingOrders(channel, api.config.AccrualSystemAddress, db, api.config.WorkerPoolSize, mutex)
 }
