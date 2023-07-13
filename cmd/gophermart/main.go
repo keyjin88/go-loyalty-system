@@ -8,9 +8,5 @@ import (
 func main() {
 	server := app.New()
 	// api server start
-	err := server.Start()
-	if err != nil {
-		logger.Log.Infof("Error starting")
-		return
-	}
+	logger.Log.Panic(server.Start())
 }
