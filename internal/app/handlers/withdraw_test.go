@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/keyjin88/go-loyalty-system/internal/app/handlers/mocks"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 	"net/http"
 	"testing"
 	"time"
@@ -119,7 +119,7 @@ func TestHandler_GetAllWithdrawals(t *testing.T) {
 	defer ctrl.Finish()
 
 	now := time.Now()
-	withdrawals := []storage.WithdrawResponse{
+	withdrawals := []models.WithdrawResponse{
 		{
 			Order:         "123",
 			Sum:           123,
@@ -132,7 +132,7 @@ func TestHandler_GetAllWithdrawals(t *testing.T) {
 		name                    string
 		mustGetReturn           uint
 		mustGetCallCount        int
-		getAllWithdrawalsReturn []storage.WithdrawResponse
+		getAllWithdrawalsReturn []models.WithdrawResponse
 		getAllWithdrawalsError  error
 		status                  int
 		response                any
@@ -159,7 +159,7 @@ func TestHandler_GetAllWithdrawals(t *testing.T) {
 			name:                    "Withdrawals are empty",
 			mustGetReturn:           101,
 			mustGetCallCount:        1,
-			getAllWithdrawalsReturn: []storage.WithdrawResponse{},
+			getAllWithdrawalsReturn: []models.WithdrawResponse{},
 			getAllWithdrawalsError:  nil,
 			status:                  http.StatusNoContent,
 			response:                gin.H{"error": "withdrawal not found"},

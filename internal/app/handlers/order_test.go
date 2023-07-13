@@ -6,7 +6,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/keyjin88/go-loyalty-system/internal/app/handlers/mocks"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 	"net/http"
 	"testing"
 	"time"
@@ -27,8 +29,8 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 		getRowDataError     error
 		mustGetReturn       uint
 		mustGetCallCount    int
-		saveOrderParameters storage.NewOrderRequest
-		saveOrderResponse   storage.Order
+		saveOrderParameters dto.OrderDTO
+		saveOrderResponse   entities.Order
 		saveOrderError      error
 		saveOrderCallCount  int
 		status              int
@@ -40,11 +42,11 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 			getRowDataError:  nil,
 			mustGetReturn:    101,
 			mustGetCallCount: 1,
-			saveOrderParameters: storage.NewOrderRequest{
+			saveOrderParameters: dto.OrderDTO{
 				Number: "1234567890",
 				UserID: 101,
 			},
-			saveOrderResponse: storage.Order{
+			saveOrderResponse: entities.Order{
 				Number: "1234567890",
 			},
 			saveOrderError:     nil,
@@ -57,8 +59,8 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 			getRowData:          nil,
 			getRowDataError:     errors.New("error while reading request"),
 			mustGetCallCount:    0,
-			saveOrderParameters: storage.NewOrderRequest{},
-			saveOrderResponse:   storage.Order{},
+			saveOrderParameters: dto.OrderDTO{},
+			saveOrderResponse:   entities.Order{},
 			saveOrderError:      nil,
 			saveOrderCallCount:  0,
 			status:              http.StatusBadRequest,
@@ -70,12 +72,12 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 			getRowDataError:  nil,
 			mustGetReturn:    101,
 			mustGetCallCount: 1,
-			saveOrderParameters: storage.NewOrderRequest{
+			saveOrderParameters: dto.OrderDTO{
 				Number: "1234567890",
 				UserID: 101,
 			},
-			saveOrderResponse:  storage.Order{},
-			saveOrderError:     errors.New("order already uploaded by this user"),
+			saveOrderResponse:  entities.Order{},
+			saveOrderError:     ErrOrderAlreadyUploadedByUser,
 			saveOrderCallCount: 1,
 			status:             http.StatusOK,
 			response:           gin.H{"error": "order already uploaded by this user"},
@@ -86,12 +88,12 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 			getRowDataError:  nil,
 			mustGetReturn:    101,
 			mustGetCallCount: 1,
-			saveOrderParameters: storage.NewOrderRequest{
+			saveOrderParameters: dto.OrderDTO{
 				Number: "1234567890",
 				UserID: 101,
 			},
-			saveOrderResponse:  storage.Order{},
-			saveOrderError:     errors.New("order already uploaded by another user"),
+			saveOrderResponse:  entities.Order{},
+			saveOrderError:     ErrOrderAlreadyUploaded,
 			saveOrderCallCount: 1,
 			status:             http.StatusConflict,
 			response:           gin.H{"error": "order already uploaded by another user"},
@@ -102,12 +104,12 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 			getRowDataError:  nil,
 			mustGetReturn:    101,
 			mustGetCallCount: 1,
-			saveOrderParameters: storage.NewOrderRequest{
+			saveOrderParameters: dto.OrderDTO{
 				Number: "1234567890",
 				UserID: 101,
 			},
-			saveOrderResponse:  storage.Order{},
-			saveOrderError:     errors.New("order has wrong format"),
+			saveOrderResponse:  entities.Order{},
+			saveOrderError:     ErrOrderHasWrongFormat,
 			saveOrderCallCount: 1,
 			status:             http.StatusUnprocessableEntity,
 			response:           gin.H{"error": "wrong order number format"},
@@ -118,11 +120,11 @@ func TestHandler_ProcessUserOrder(t *testing.T) {
 			getRowDataError:  nil,
 			mustGetReturn:    101,
 			mustGetCallCount: 1,
-			saveOrderParameters: storage.NewOrderRequest{
+			saveOrderParameters: dto.OrderDTO{
 				Number: "1234567890",
 				UserID: 101,
 			},
-			saveOrderResponse:  storage.Order{},
+			saveOrderResponse:  entities.Order{},
 			saveOrderError:     errors.New("internal Server Error"),
 			saveOrderCallCount: 1,
 			status:             http.StatusInternalServerError,
@@ -162,7 +164,7 @@ func TestHandler_GetAllOrders(t *testing.T) {
 	defer ctrl.Finish()
 
 	now := time.Now()
-	orders := []storage.AllOrderResponse{
+	orders := []models.AllOrderResponse{
 		{
 			Number:       "111111111",
 			Status:       "NEW",
@@ -176,7 +178,7 @@ func TestHandler_GetAllOrders(t *testing.T) {
 		name               string
 		mustGetReturn      uint
 		mustGetCallCount   int
-		getAllOrdersReturn []storage.AllOrderResponse
+		getAllOrdersReturn []models.AllOrderResponse
 		getAllOrdersError  error
 		status             int
 		response           any
@@ -194,7 +196,7 @@ func TestHandler_GetAllOrders(t *testing.T) {
 			name:               "Internal Server Error",
 			mustGetReturn:      101,
 			mustGetCallCount:   1,
-			getAllOrdersReturn: []storage.AllOrderResponse{},
+			getAllOrdersReturn: []models.AllOrderResponse{},
 			getAllOrdersError:  errors.New("internal Server Error"),
 			status:             http.StatusInternalServerError,
 			response:           gin.H{"error": "Internal Server Error"},
@@ -203,7 +205,7 @@ func TestHandler_GetAllOrders(t *testing.T) {
 			name:               "Orders not found",
 			mustGetReturn:      101,
 			mustGetCallCount:   1,
-			getAllOrdersReturn: []storage.AllOrderResponse{},
+			getAllOrdersReturn: []models.AllOrderResponse{},
 			getAllOrdersError:  nil,
 			status:             http.StatusNoContent,
 			response:           gin.H{"error": "orders not found"},

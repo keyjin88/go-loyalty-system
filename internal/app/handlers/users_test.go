@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/keyjin88/go-loyalty-system/internal/app/handlers/mocks"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 	"gorm.io/gorm"
 	"net/http"
 	"testing"
@@ -25,7 +25,7 @@ func TestHandler_RegisterUser(t *testing.T) {
 		name              string
 		getRowDataReturn  []byte
 		getRowDataError   error
-		saveUserReturn    storage.User
+		saveUserReturn    entities.User
 		saveUserError     error
 		saveUserCallCount int
 		headerCallCount   int
@@ -37,8 +37,8 @@ func TestHandler_RegisterUser(t *testing.T) {
 			name:             "Success",
 			getRowDataReturn: []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:  nil,
-			saveUserReturn: storage.User{
-				Entity: storage.Entity{
+			saveUserReturn: entities.User{
+				Entity: entities.Entity{
 					Model:     gorm.Model{ID: 1},
 					IsDeleted: false,
 				},
@@ -56,7 +56,7 @@ func TestHandler_RegisterUser(t *testing.T) {
 			name:              "Error while reading request",
 			getRowDataReturn:  nil,
 			getRowDataError:   errors.New("error while reading request"),
-			saveUserReturn:    storage.User{},
+			saveUserReturn:    entities.User{},
 			saveUserError:     nil,
 			saveUserCallCount: 0,
 			headerCallCount:   0,
@@ -68,7 +68,7 @@ func TestHandler_RegisterUser(t *testing.T) {
 			name:              "Error while marshalling json",
 			getRowDataReturn:  []byte("WRONG JSON STRING"),
 			getRowDataError:   nil,
-			saveUserReturn:    storage.User{},
+			saveUserReturn:    entities.User{},
 			saveUserError:     nil,
 			saveUserCallCount: 0,
 			headerCallCount:   0,
@@ -80,7 +80,7 @@ func TestHandler_RegisterUser(t *testing.T) {
 			name:              "User already exists",
 			getRowDataReturn:  []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:   nil,
-			saveUserReturn:    storage.User{},
+			saveUserReturn:    entities.User{},
 			saveUserError:     errors.New("user already exists"),
 			saveUserCallCount: 1,
 			headerCallCount:   0,
@@ -91,7 +91,7 @@ func TestHandler_RegisterUser(t *testing.T) {
 			name:              "Internal Server Error",
 			getRowDataReturn:  []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:   nil,
-			saveUserReturn:    storage.User{},
+			saveUserReturn:    entities.User{},
 			saveUserError:     errors.New("internal Server Error"),
 			saveUserCallCount: 1,
 			headerCallCount:   0,
@@ -102,7 +102,7 @@ func TestHandler_RegisterUser(t *testing.T) {
 			name:              "Create JWT Error",
 			getRowDataReturn:  []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:   nil,
-			saveUserReturn:    storage.User{UserName: "Admin", Password: "hashed_password"},
+			saveUserReturn:    entities.User{UserName: "Admin", Password: "hashed_password"},
 			saveUserError:     nil,
 			saveUserCallCount: 1,
 			headerCallCount:   0,
@@ -145,7 +145,7 @@ func TestHandler_LoginUser(t *testing.T) {
 		secret           string
 		getRowDataReturn []byte
 		getRowDataError  error
-		getUserReturn    storage.User
+		getUserReturn    entities.User
 		getUserError     error
 		getUserCallCount int
 		headerCallCount  int
@@ -157,8 +157,8 @@ func TestHandler_LoginUser(t *testing.T) {
 			secret:           "secret",
 			getRowDataReturn: []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:  nil,
-			getUserReturn: storage.User{
-				Entity: storage.Entity{
+			getUserReturn: entities.User{
+				Entity: entities.Entity{
 					Model:     gorm.Model{ID: 1},
 					IsDeleted: false,
 				},
@@ -175,7 +175,7 @@ func TestHandler_LoginUser(t *testing.T) {
 			name:             "Error while reading request",
 			getRowDataReturn: nil,
 			getRowDataError:  errors.New("error while reading request"),
-			getUserReturn:    storage.User{},
+			getUserReturn:    entities.User{},
 			getUserError:     nil,
 			getUserCallCount: 0,
 			headerCallCount:  0,
@@ -187,7 +187,7 @@ func TestHandler_LoginUser(t *testing.T) {
 			name:             "Error while marshalling json",
 			getRowDataReturn: []byte("WRONG JSON STRING"),
 			getRowDataError:  nil,
-			getUserReturn:    storage.User{},
+			getUserReturn:    entities.User{},
 			getUserError:     nil,
 			getUserCallCount: 0,
 			headerCallCount:  0,
@@ -199,7 +199,7 @@ func TestHandler_LoginUser(t *testing.T) {
 			name:             "Wrong password",
 			getRowDataReturn: []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:  nil,
-			getUserReturn:    storage.User{},
+			getUserReturn:    entities.User{},
 			getUserError:     errors.New("crypto/bcrypt: hashedPassword is not the hash of the given password"),
 			getUserCallCount: 1,
 			headerCallCount:  0,
@@ -210,7 +210,7 @@ func TestHandler_LoginUser(t *testing.T) {
 			name:             "Internal Server Error",
 			getRowDataReturn: []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:  nil,
-			getUserReturn:    storage.User{},
+			getUserReturn:    entities.User{},
 			getUserError:     errors.New("internal Server Error"),
 			getUserCallCount: 1,
 			headerCallCount:  0,
@@ -221,7 +221,7 @@ func TestHandler_LoginUser(t *testing.T) {
 			name:             "Create JWT Error",
 			getRowDataReturn: []byte("{\n\t\"login\": \"Admin\",\n\t\"password\": \"<password>\"\n}"),
 			getRowDataError:  nil,
-			getUserReturn:    storage.User{UserName: "Admin", Password: "hashed_password"},
+			getUserReturn:    entities.User{UserName: "Admin", Password: "hashed_password"},
 			getUserError:     nil,
 			getUserCallCount: 1,
 			headerCallCount:  0,

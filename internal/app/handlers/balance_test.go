@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/keyjin88/go-loyalty-system/internal/app/handlers/mocks"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
-	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	"github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 	"net/http"
 	"testing"
 )
@@ -23,7 +23,7 @@ func TestHandler_GetBalance(t *testing.T) {
 	tests := []struct {
 		name              string
 		mustGetReturn     uint
-		userServiceReturn storage.BalanceResponse
+		userServiceReturn models.BalanceResponse
 		userServiceError  error
 		status            int
 		response          any
@@ -31,13 +31,13 @@ func TestHandler_GetBalance(t *testing.T) {
 		{
 			name:          "Success",
 			mustGetReturn: 101,
-			userServiceReturn: storage.BalanceResponse{
+			userServiceReturn: models.BalanceResponse{
 				Current:   101.01,
 				Withdrawn: 543.21,
 			},
 			userServiceError: nil,
 			status:           http.StatusOK,
-			response: storage.BalanceResponse{
+			response: models.BalanceResponse{
 				Current:   101.01,
 				Withdrawn: 543.21,
 			},
@@ -45,7 +45,7 @@ func TestHandler_GetBalance(t *testing.T) {
 		{
 			name:              "Internal Server Error",
 			mustGetReturn:     101,
-			userServiceReturn: storage.BalanceResponse{},
+			userServiceReturn: models.BalanceResponse{},
 			userServiceError:  errors.New("error"),
 			status:            http.StatusInternalServerError,
 			response:          gin.H{"error": "Internal Server Error"},
