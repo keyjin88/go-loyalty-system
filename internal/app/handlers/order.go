@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
 	"github.com/keyjin88/go-loyalty-system/internal/app/storage"
 	"net/http"
 )
+
+var ErrOrderAlreadyUploaded = errors.New("order already uploaded by another user")
+var ErrOrderAlreadyUploadedByUser = errors.New("order already uploaded by this user")
+var ErrOrderHasWrongFormat = errors.New("order already uploaded by this user")
 
 func (h *Handler) ProcessUserOrder(c RequestContext) {
 	requestBytes, err := c.GetRawData()
@@ -18,20 +23,24 @@ func (h *Handler) ProcessUserOrder(c RequestContext) {
 	userID := c.MustGet("userID").(uint)
 	order, err := h.orderService.SaveOrder(storage.NewOrderRequest{Number: orderNumber, UserID: userID})
 	if err != nil {
-		switch {
-		case err.Error() == "order already uploaded by this user":
+		if errors.Is(err, ErrOrderAlreadyUploadedByUser) {
+			logger.Log.Infof("Order already uploaded by user %v", userID)
 			c.JSON(http.StatusOK, gin.H{"error": "order already uploaded by this user"})
 			return
-		case err.Error() == "order already uploaded by another user":
-			c.JSON(http.StatusConflict, gin.H{"error": "order already uploaded by another user"})
-			return
-		case err.Error() == "order has wrong format":
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "wrong order number format"})
-			return
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		}
+		if errors.Is(err, ErrOrderAlreadyUploaded) {
+			logger.Log.Infof("Order already uploaded by another user")
+			c.JSON(http.StatusOK, gin.H{"error": "order already uploaded by another user"})
 			return
 		}
+		if errors.Is(err, ErrOrderHasWrongFormat) {
+			logger.Log.Infof("Wrong order number format: %s", order.Number)
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "wrong order number format"})
+			return
+		}
+		logger.Log.Infof("Internal Server Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"processed": order.Number})
 }

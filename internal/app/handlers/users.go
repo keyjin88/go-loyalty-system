@@ -31,11 +31,10 @@ func (h *Handler) RegisterUser(c RequestContext) {
 			logger.Log.Infof("User already exists: %v", err)
 			c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 			return
-		} else {
-			logger.Log.Infof("Internal Server Error: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-			return
 		}
+		logger.Log.Infof("Internal Server Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
 	}
 	token, err := createToken(userFromDB.ID, h.secret)
 	if err != nil {
