@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	storage "github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	entities "github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 )
 
 // MockUserRepository is a mock of UserRepository interface.
@@ -35,10 +35,10 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 }
 
 // FindUserByID mocks base method.
-func (m *MockUserRepository) FindUserByID(arg0 uint) (storage.User, error) {
+func (m *MockUserRepository) FindUserByID(arg0 uint) (entities.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindUserByID", arg0)
-	ret0, _ := ret[0].(storage.User)
+	ret0, _ := ret[0].(entities.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,10 +50,10 @@ func (mr *MockUserRepositoryMockRecorder) FindUserByID(arg0 interface{}) *gomock
 }
 
 // FindUserByUserName mocks base method.
-func (m *MockUserRepository) FindUserByUserName(arg0 string) (storage.User, error) {
+func (m *MockUserRepository) FindUserByUserName(arg0 string) (entities.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindUserByUserName", arg0)
-	ret0, _ := ret[0].(storage.User)
+	ret0, _ := ret[0].(entities.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,7 +65,7 @@ func (mr *MockUserRepositoryMockRecorder) FindUserByUserName(arg0 interface{}) *
 }
 
 // Save mocks base method.
-func (m *MockUserRepository) Save(arg0 *storage.User) error {
+func (m *MockUserRepository) Save(arg0 *entities.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", arg0)
 	ret0, _ := ret[0].(error)
@@ -79,7 +79,7 @@ func (mr *MockUserRepositoryMockRecorder) Save(arg0 interface{}) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockUserRepository) Update(arg0 *storage.User) error {
+func (m *MockUserRepository) Update(arg0 *entities.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
 	ret0, _ := ret[0].(error)

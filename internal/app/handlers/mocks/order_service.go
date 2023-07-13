@@ -8,7 +8,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	storage "github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	dto "github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	entities "github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
+	models "github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 )
 
 // MockOrderService is a mock of OrderService interface.
@@ -35,10 +37,10 @@ func (m *MockOrderService) EXPECT() *MockOrderServiceMockRecorder {
 }
 
 // GetAllOrders mocks base method.
-func (m *MockOrderService) GetAllOrders(arg0 uint) ([]storage.AllOrderResponse, error) {
+func (m *MockOrderService) GetAllOrders(arg0 uint) ([]models.AllOrderResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllOrders", arg0)
-	ret0, _ := ret[0].([]storage.AllOrderResponse)
+	ret0, _ := ret[0].([]models.AllOrderResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,10 +52,10 @@ func (mr *MockOrderServiceMockRecorder) GetAllOrders(arg0 interface{}) *gomock.C
 }
 
 // SaveOrder mocks base method.
-func (m *MockOrderService) SaveOrder(arg0 storage.NewOrderRequest) (storage.Order, error) {
+func (m *MockOrderService) SaveOrder(arg0 dto.OrderDTO) (entities.Order, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveOrder", arg0)
-	ret0, _ := ret[0].(storage.Order)
+	ret0, _ := ret[0].(entities.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

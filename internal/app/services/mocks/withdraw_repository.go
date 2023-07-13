@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	storage "github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	entities "github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
 )
 
 // MockWithdrawRepository is a mock of WithdrawRepository interface.
@@ -35,10 +35,10 @@ func (m *MockWithdrawRepository) EXPECT() *MockWithdrawRepositoryMockRecorder {
 }
 
 // GetWithdrawals mocks base method.
-func (m *MockWithdrawRepository) GetWithdrawals(arg0 uint) ([]storage.Withdraw, error) {
+func (m *MockWithdrawRepository) GetWithdrawals(arg0 uint) ([]entities.Withdraw, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWithdrawals", arg0)
-	ret0, _ := ret[0].([]storage.Withdraw)
+	ret0, _ := ret[0].([]entities.Withdraw)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,7 +50,7 @@ func (mr *MockWithdrawRepositoryMockRecorder) GetWithdrawals(arg0 interface{}) *
 }
 
 // Save mocks base method.
-func (m *MockWithdrawRepository) Save(arg0 *storage.Withdraw) error {
+func (m *MockWithdrawRepository) Save(arg0 *entities.Withdraw) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", arg0)
 	ret0, _ := ret[0].(error)

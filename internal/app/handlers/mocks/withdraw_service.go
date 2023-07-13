@@ -8,7 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	storage "github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	dto "github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	models "github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 )
 
 // MockWithdrawService is a mock of WithdrawService interface.
@@ -35,10 +36,10 @@ func (m *MockWithdrawService) EXPECT() *MockWithdrawServiceMockRecorder {
 }
 
 // GetAllWithdrawals mocks base method.
-func (m *MockWithdrawService) GetAllWithdrawals(arg0 uint) ([]storage.WithdrawResponse, error) {
+func (m *MockWithdrawService) GetAllWithdrawals(arg0 uint) ([]models.WithdrawResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllWithdrawals", arg0)
-	ret0, _ := ret[0].([]storage.WithdrawResponse)
+	ret0, _ := ret[0].([]models.WithdrawResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,7 +51,7 @@ func (mr *MockWithdrawServiceMockRecorder) GetAllWithdrawals(arg0 interface{}) *
 }
 
 // SaveWithdraw mocks base method.
-func (m *MockWithdrawService) SaveWithdraw(arg0 storage.WithdrawRequest) error {
+func (m *MockWithdrawService) SaveWithdraw(arg0 dto.WithdrawDTO) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveWithdraw", arg0)
 	ret0, _ := ret[0].(error)

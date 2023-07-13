@@ -8,7 +8,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	storage "github.com/keyjin88/go-loyalty-system/internal/app/storage"
+	dto "github.com/keyjin88/go-loyalty-system/internal/app/model/dto"
+	entities "github.com/keyjin88/go-loyalty-system/internal/app/model/entities"
+	models "github.com/keyjin88/go-loyalty-system/internal/app/model/models"
 )
 
 // MockUserService is a mock of UserService interface.
@@ -35,10 +37,10 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 }
 
 // GetUserBalance mocks base method.
-func (m *MockUserService) GetUserBalance(arg0 uint) (storage.BalanceResponse, error) {
+func (m *MockUserService) GetUserBalance(arg0 uint) (models.BalanceResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserBalance", arg0)
-	ret0, _ := ret[0].(storage.BalanceResponse)
+	ret0, _ := ret[0].(models.BalanceResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,10 +52,10 @@ func (mr *MockUserServiceMockRecorder) GetUserBalance(arg0 interface{}) *gomock.
 }
 
 // GetUserByUserName mocks base method.
-func (m *MockUserService) GetUserByUserName(arg0 storage.AuthRequest) (storage.User, error) {
+func (m *MockUserService) GetUserByUserName(arg0 dto.UserDTO) (entities.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByUserName", arg0)
-	ret0, _ := ret[0].(storage.User)
+	ret0, _ := ret[0].(entities.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +67,10 @@ func (mr *MockUserServiceMockRecorder) GetUserByUserName(arg0 interface{}) *gomo
 }
 
 // SaveUser mocks base method.
-func (m *MockUserService) SaveUser(arg0 storage.AuthRequest) (storage.User, error) {
+func (m *MockUserService) SaveUser(arg0 dto.UserDTO) (entities.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveUser", arg0)
-	ret0, _ := ret[0].(storage.User)
+	ret0, _ := ret[0].(entities.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
