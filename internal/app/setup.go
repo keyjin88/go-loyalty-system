@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/keyjin88/go-loyalty-system/internal/app/config"
 	"github.com/keyjin88/go-loyalty-system/internal/app/daemons"
@@ -15,7 +16,11 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 )
 
 type API struct {
@@ -35,8 +40,65 @@ func New() *API {
 		config: config.NewConfig(),
 	}
 }
-
 func (api *API) Start() error {
+	_, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err := logger.Initialize(api.config.LogLevel); err != nil {
+		return err
+	}
+
+	api.config.InitConfig()
+	api.configureRouter()
+	db := api.ConfigDBConnection()
+	api.configStorage(db)
+	// Канал для обработки заказов через сервер Accrual
+	// Если уже есть пулл горутин, то насколько важна буферизация канала? Или я чего-то не понял?
+	orderProcessingChannel := make(chan entities.Order, api.config.ProcessingChannelBufferSize)
+	mutex := &sync.Mutex{}
+	api.configService(orderProcessingChannel, mutex)
+	api.configHandlers()
+	api.configWorkers(db, orderProcessingChannel, mutex)
+
+	// Создаем HTTP-сервер
+	srv := &http.Server{
+		Addr:    api.config.ServerAddress,
+		Handler: api.router,
+	}
+
+	// Запускаем HTTP-сервер в отдельной горутине
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Ошибка при запуске сервера: %v", err)
+		}
+	}()
+
+	log.Println("Сервер запущен")
+
+	// Ожидаем получения сигнала остановки
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Получен сигнал остановки")
+
+	// Отменяем контекст для graceful shutdown
+	cancel()
+
+	// Устанавливаем таймаут для graceful shutdown
+	ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelShutdown()
+
+	// Останавливаем HTTP-сервер
+	if err := srv.Shutdown(ctxShutdown); err != nil {
+		log.Fatalf("Ошибка при остановке сервера: %v", err)
+	}
+
+	log.Println("Сервер остановлен")
+
+	return nil
+}
+
+func (api *API) StartOne() error {
 	if err := logger.Initialize(api.config.LogLevel); err != nil {
 		return err
 	}
