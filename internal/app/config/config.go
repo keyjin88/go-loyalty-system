@@ -1,8 +1,11 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"flag"
 	"github.com/caarlos0/env/v6"
+	"github.com/keyjin88/go-loyalty-system/internal/app/logger"
 	"log"
 )
 
@@ -27,7 +30,12 @@ func (config *Config) InitConfig() {
 	flag.StringVar(&config.ServerAddress, "a", "localhost:8081", "address and port to run server")
 	flag.BoolVar(&config.GinReleaseMode, "grm", false, "gin release mode")
 	flag.StringVar(&config.LogLevel, "ll", "info", "log level")
-	flag.StringVar(&config.SecretKey, "sk", "abcdefghijklmnopqrstuvwxyz123456", "secret key for cryptographic")
+	secretKey, genSecretErr := GenSecretKey(32)
+	if genSecretErr != nil {
+		secretKey = "abcdefghijklmnopqrstuvwxyz123456"
+		logger.Log.Errorf("error while generate secret key")
+	}
+	flag.StringVar(&config.SecretKey, "sk", secretKey, "secret key for cryptographic")
 	flag.StringVar(&config.AccrualSystemAddress, "r", "http://localhost:8080", "accrual system address")
 	//flag.StringVar(&config.DataBaseURI, "d", "", "database dsn")
 	// Оставил для локальных тестов
@@ -41,4 +49,14 @@ func (config *Config) InitConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// GenSecretKey генерирует секретный ключ и возвращает его в виде Base64-строки.
+func GenSecretKey(n int) (string, error) {
+	data := make([]byte, n)
+	_, err := rand.Read(data)
+	if err != nil {
+		return ``, err
+	}
+	return base64.StdEncoding.EncodeToString(data), nil
 }
